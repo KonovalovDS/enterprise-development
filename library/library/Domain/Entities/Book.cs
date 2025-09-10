@@ -8,17 +8,17 @@ public class Book {
     public required string Author { get; set; }
     public required string Name { get; set; }
     public required Publisher Publisher { get; set; }
-    public required PublishingType PublisherType { get; set; }
+    public required PublishingType PublishingType { get; set; }
     public required int PublicationYear { get; set; }
 
     private Book() { }
 
-    public Book(string code, string author, string name, int year, Publisher publisher, PublishingType publisherType) {
+    public Book(string code, string author, string name, int year, Publisher publisher, PublishingType publishingType) {
         Author = author ?? throw new ArgumentNullException(nameof(author));
         Name = name ?? throw new ArgumentNullException(nameof(name));
         PublicationYear = year;
         Publisher = publisher;
-        PublisherType = publisherType;
+        PublishingType = publishingType;
         Code = string.IsNullOrWhiteSpace(code) ? GenerateCode() : code;
     }
 
@@ -28,11 +28,11 @@ public class Book {
         return $"{char.ToUpper(Name[0])}{(int)Publisher}";
     }
 
-    public void Update(string name, string author, int publicationYear, Publisher publisher, PublishingType pusblisherType) {
+    public void Update(string name, string author, int publicationYear, Publisher publisher, PublishingType pusblishingType) {
         Name = name;
         Author = author;
         PublicationYear = publicationYear;
         Publisher = publisher;
-        PublisherType = pusblisherType;
+        PublishingType = pusblishingType;
     }
 }
