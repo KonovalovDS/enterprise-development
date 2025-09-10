@@ -15,7 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <Folder Include="Api\Controllers\" />
+    <Folder Include="Application\" />
+    <Folder Include="Api\" />
+    <Folder Include="Infrastructure\Persistence\" />
+    <Folder Include="Infrastructure\Repositories\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
 
 </Project>
