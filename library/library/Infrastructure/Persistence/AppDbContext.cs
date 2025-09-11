@@ -1,5 +1,7 @@
 ﻿using library.Domain.Entities;
+using library.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using static Grpc.Core.Metadata;
 
 namespace library.Infrastructure.Persistence;
 
@@ -14,7 +16,9 @@ public class AppDbContext : DbContext {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Customer>(c => {
-            c.HasKey(x => x.Id);
+            c.HasKey(c => c.Id);
+            c.Property(c => c.Id)
+                .ValueGeneratedOnAdd();
             c.Property(c => c.Name)
                 .IsRequired()
                 .HasMaxLength(128);
@@ -31,6 +35,8 @@ public class AppDbContext : DbContext {
 
         modelBuilder.Entity<Book>(b => {
             b.HasKey(b => b.Id);
+            b.Property(b => b.Id)
+                .ValueGeneratedOnAdd();
             b.Property(b => b.Code)
                .IsRequired()
                .HasMaxLength(3);
@@ -50,20 +56,22 @@ public class AppDbContext : DbContext {
                .IsRequired();
         });
 
-        modelBuilder.Entity<BorrowRecord>(l => {
-            l.HasKey(b => b.Id);
-            l.HasOne<Book>()
+        modelBuilder.Entity<BorrowRecord>(b => {
+            b.HasKey(b => b.Id);
+            b.Property(b => b.Id)
+                .ValueGeneratedOnAdd();
+            b.HasOne<Book>()
                    .WithMany()
                    .HasForeignKey(b => b.BookId)
                    .OnDelete(DeleteBehavior.Cascade);
-            l.HasOne<Customer>()
+            b.HasOne<Customer>()
                    .WithMany()
                    .HasForeignKey(b => b.CustomerId)
                    .OnDelete(DeleteBehavior.Cascade);
-            l.Property(b => b.BorrowDate)
+            b.Property(b => b.BorrowDate)
                    .IsRequired()
                    .HasColumnType("date");
-            l.Property(b => b.BorrowDuration)
+            b.Property(b => b.BorrowDuration)
                    .IsRequired();
         });
     }

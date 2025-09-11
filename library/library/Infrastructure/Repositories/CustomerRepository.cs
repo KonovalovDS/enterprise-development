@@ -18,7 +18,8 @@ public class CustomerRepository : ICustomerRepository {
     public async Task<Customer?> GetByIdAsync(int id) => 
         await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
 
-    public async Task<bool> ExistsById(int id) => await _context.Customers.AnyAsync(b => b.Id == id);
+    public async Task<bool> ExistsById(int id) => 
+        await _context.Customers.AnyAsync(b => b.Id == id);
 
     public async Task AddAsync(Customer customer) {
         if (customer == null) throw new ArgumentNullException(nameof(customer));

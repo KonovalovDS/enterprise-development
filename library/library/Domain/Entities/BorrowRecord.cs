@@ -1,11 +1,11 @@
 ﻿namespace library.Domain.Entities;
 
 public class BorrowRecord {
-    public required int Id { get; set; }
-    public required int BookId { get; set; }
-    public required int CustomerId { get; set; }
-    public required DateOnly BorrowDate { get; set; }
-    public required int BorrowDuration { get; set; }
+    public int Id { get; set; }
+    public int BookId { get; set; }
+    public int CustomerId { get; set; }
+    public DateOnly BorrowDate { get; set; }
+    public int BorrowDuration { get; set; }
 
     private BorrowRecord() { }
     public BorrowRecord(int bookId, int customerId, DateOnly borrowDate, int borrowDuration) {

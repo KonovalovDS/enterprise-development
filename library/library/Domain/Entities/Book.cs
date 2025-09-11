@@ -3,13 +3,13 @@
 namespace library.Domain.Entities;
 
 public class Book {
-    public required int Id { get; set; }
-    public required string Code { get; set; }
-    public required string Author { get; set; }
-    public required string Name { get; set; }
-    public required Publisher Publisher { get; set; }
-    public required PublishingType PublishingType { get; set; }
-    public required int PublicationYear { get; set; }
+    public int Id { get; set; }
+    public string Code { get; set; }
+    public string Author { get; set; }
+    public string Name { get; set; }
+    public Publisher Publisher { get; set; }
+    public PublishingType PublishingType { get; set; }
+    public int PublicationYear { get; set; }
 
     private Book() { }
 

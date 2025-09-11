@@ -1,11 +1,11 @@
 ﻿namespace library.Domain.Entities;
 
 public class Customer {
-    public required int Id { get; set; }
-    public required string Name { get; set; }
-    public required string Address { get; set; }
-    public required string PhoneNumber { get; set; }
-    public required DateOnly RegisterDate { get; init; } = DateOnly.FromDateTime(DateTime.Today);
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Address { get; set; }
+    public string PhoneNumber { get; set; }
+    public DateOnly RegisterDate { get; init; } = DateOnly.FromDateTime(DateTime.Today);
 
     private Customer() { }
     public Customer(string name, string address, string phoneNumber) {
