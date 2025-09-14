@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.4.2" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
       <PrivateAssets>all</PrivateAssets>
@@ -17,14 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\library.ServiceDefaults\library.ServiceDefaults.csproj" />
+    <Folder Include="Application\Services\" />
+    <Folder Include="Infrastructure\Persistence\Migrations\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Api\Controllers\" />
-    <Folder Include="Api\" />
-    <Folder Include="Application\Services\" />
-    <Folder Include="Tests\" />
+    <ProjectReference Include="..\library.ServiceDefaults\library.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

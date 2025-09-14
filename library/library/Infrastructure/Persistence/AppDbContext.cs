@@ -1,7 +1,6 @@
 ﻿using library.Domain.Entities;
 using library.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using static Grpc.Core.Metadata;
 
 namespace library.Infrastructure.Persistence;
 
