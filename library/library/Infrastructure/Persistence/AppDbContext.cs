@@ -4,17 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace library.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext {
+public class AppDbContext : DbContext 
+    {
     public DbSet<Book> Books { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<BorrowRecord> BorrowRecords { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+    protected override void OnModelCreating(ModelBuilder modelBuilder) 
+        {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Customer>(c => {
+        modelBuilder.Entity<Customer>(c => 
+            {
             c.HasKey(c => c.Id);
             c.Property(c => c.Id)
                 .ValueGeneratedOnAdd();

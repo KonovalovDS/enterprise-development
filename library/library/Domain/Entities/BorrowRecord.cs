@@ -8,9 +8,10 @@ public class BorrowRecord {
     public int BorrowDuration { get; set; }
 
     private BorrowRecord() { }
-    public BorrowRecord(int bookId, int customerId, DateOnly borrowDate, int borrowDuration) {
+    public BorrowRecord(int id, int bookId, int customerId, DateOnly borrowDate, int borrowDuration) {
         if (borrowDuration <= 0 || borrowDuration > 31) 
             throw new ArgumentException("Loan duration must be positive number and less or equal than 31", nameof(borrowDuration));
+        Id = id;
         BookId = bookId;
         CustomerId = customerId;
         BorrowDate = borrowDate;
