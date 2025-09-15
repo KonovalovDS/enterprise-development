@@ -29,7 +29,7 @@ public class AppDbContext : DbContext
                 .HasMaxLength(128);
             c.Property(c => c.PhoneNumber)
                 .IsRequired()
-                .HasMaxLength(10);
+                .HasMaxLength(12);
             c.Property(c => c.RegisterDate)
                 .IsRequired()
                 .HasColumnType("date");
