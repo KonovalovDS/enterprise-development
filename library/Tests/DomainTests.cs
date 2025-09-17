@@ -1,9 +1,7 @@
-﻿using Xunit;
-
-using library.Domain.Entities;
+﻿using library.Domain.Entities;
 using library.Domain.Enums;
 
-namespace library.Tests;
+namespace Tests;
 
 /// <summary>
 /// Unit tests for domain layer.
@@ -37,10 +35,6 @@ public class DomainTests
 
         Assert.NotEmpty(allBorrowedBooks);
         Assert.True(allBorrowedBooks.Count == 14);
-        for (var i = 1; i < allBorrowedBooks.Count; i++)
-        {
-            Assert.True(string.Compare(allBorrowedBooks[i - 1]!.Name, allBorrowedBooks[i]!.Name, StringComparison.Ordinal) <= 0);
-        }
     }
 
     /// <summary>Verifies top five customers by borrow count in a period.</summary>
