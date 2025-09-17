@@ -1,7 +1,8 @@
-﻿using library.Domain.Entities;
+﻿namespace library.Api.DTOs;
 
-namespace library.Api.DTOs;
-
+/// <summary>
+/// Data Transfer Object for <see cref="Customer"/>.
+/// </summary>
 public class CustomerDto
 {
     public string? Name { get; set; }

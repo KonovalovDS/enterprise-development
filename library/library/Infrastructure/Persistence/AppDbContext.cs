@@ -1,23 +1,34 @@
-﻿using library.Domain.Entities;
-using library.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+
+using library.Domain.Entities;
 
 namespace library.Infrastructure.Persistence;
 
+/// <summary>
+/// EF Core database context for the library application.
+/// </summary>
 public class AppDbContext : DbContext 
-    {
+{
     public DbSet<Book> Books { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<BorrowRecord> BorrowRecords { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="AppDbContext"/>.
+    /// </summary>
+    /// <param name="options">The options for this context.</param>
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    /// <summary>
+    /// Configures the EF Core model.
+    /// </summary>
+    /// <param name="modelBuilder">Model builder instance.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder) 
-        {
+    {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Customer>(c => 
-            {
+        {
             c.HasKey(c => c.Id);
             c.Property(c => c.Id)
                 .ValueGeneratedOnAdd();
@@ -35,7 +46,8 @@ public class AppDbContext : DbContext
                 .HasColumnType("date");
         });
 
-        modelBuilder.Entity<Book>(b => {
+        modelBuilder.Entity<Book>(b => 
+        {
             b.HasKey(b => b.Id);
             b.Property(b => b.Id)
                 .ValueGeneratedOnAdd();
@@ -63,18 +75,18 @@ public class AppDbContext : DbContext
             b.Property(b => b.Id)
                 .ValueGeneratedOnAdd();
             b.HasOne<Book>()
-                   .WithMany()
-                   .HasForeignKey(b => b.BookId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithMany()
+                .HasForeignKey(b => b.BookId)
+                .OnDelete(DeleteBehavior.Cascade);
             b.HasOne<Customer>()
-                   .WithMany()
-                   .HasForeignKey(b => b.CustomerId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithMany()
+                .HasForeignKey(b => b.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
             b.Property(b => b.BorrowDate)
-                   .IsRequired()
-                   .HasColumnType("date");
+                .IsRequired()
+                .HasColumnType("date");
             b.Property(b => b.BorrowDuration)
-                   .IsRequired();
+                .IsRequired();
         });
     }
 }

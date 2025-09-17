@@ -1,22 +1,29 @@
-﻿using library.Api.DTOs;
+﻿using Microsoft.AspNetCore.Mvc;
+
+using library.Api.DTOs;
 using library.Domain.Entities;
 using library.Domain.Interfaces;
-using library.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Mvc;
 
 namespace library.Api.Controllers;
 
+/// <summary>
+/// Endpoints for managing customers.
+/// </summary>
 [ApiController]
 [Route("api/customers")]
 public class CustomerController : Controller
 {
     private readonly ICustomerRepository _customerRepository;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="CustomerController"/>.
+    /// </summary>
     public CustomerController(ICustomerRepository customerRepository)
     {
         _customerRepository = customerRepository;
     }
 
+    /// <summary>Get all customers.</summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllCustomers()
     {
@@ -24,6 +31,7 @@ public class CustomerController : Controller
         return Ok(customers);
     }
 
+    /// <summary>Get a customer by ID.</summary>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetCustomerById(int id)
     {
@@ -32,6 +40,7 @@ public class CustomerController : Controller
         return Ok(customer);
     }
 
+    /// <summary>Delete a customer by ID.</summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCustomerById(int id)
     {
@@ -40,6 +49,7 @@ public class CustomerController : Controller
         return NoContent();
     }
 
+    /// <summary>Create a new customer.</summary>
     [HttpPost("")]
     public async Task<IActionResult> CreateCustomer([FromBody] CustomerDto dto)
     {
@@ -48,6 +58,7 @@ public class CustomerController : Controller
         return CreatedAtAction(nameof(GetCustomerById), new { id = customer.Id }, customer);
     }
 
+    /// <summary>Update an existing customer by ID.</summary>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerDto updated)
     {

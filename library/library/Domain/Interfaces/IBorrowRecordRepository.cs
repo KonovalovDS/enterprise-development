@@ -2,6 +2,9 @@
 
 namespace library.Domain.Interfaces;
 
+/// <summary>
+/// Provides methods for managing <see cref="BorrowRecord"/> entities in the repository.
+/// </summary>
 public interface IBorrowRecordRepository {
     public Task<IEnumerable<BorrowRecord>> GetAllAsync();
     public Task<BorrowRecord?> GetByIdAsync(int id);

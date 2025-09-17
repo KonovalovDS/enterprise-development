@@ -2,6 +2,9 @@
 
 namespace library.Domain.Interfaces;
 
+/// <summary>
+/// Provides methods for managing <see cref="Customer"/> entities in the repository.
+/// </summary>
 public interface ICustomerRepository {
     public Task<IEnumerable<Customer>> GetAllAsync();
     public Task<Customer?> GetByIdAsync(int id);

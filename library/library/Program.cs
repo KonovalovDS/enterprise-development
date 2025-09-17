@@ -1,8 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+
+using library.Application.Services;
 using library.Domain.Interfaces;
 using library.Infrastructure.Persistence;
 using library.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,13 +15,13 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
 
+builder.Services.AddScoped<AnalyticsService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-app.MapDefaultEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -35,9 +36,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
+app.MapDefaultEndpoints();
 app.MapControllers();
 
 app.Run();

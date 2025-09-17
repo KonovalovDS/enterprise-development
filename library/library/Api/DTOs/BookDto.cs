@@ -2,6 +2,9 @@
 
 namespace library.Api.DTOs;
 
+/// <summary>
+/// Data Transfer Object for <see cref="Book"/>.
+/// </summary>
 public class BookDto
 {
     public string? Code { get; set; }

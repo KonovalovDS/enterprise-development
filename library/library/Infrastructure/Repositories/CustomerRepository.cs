@@ -1,43 +1,72 @@
-﻿using library.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+
+using library.Domain.Entities;
 using library.Domain.Interfaces;
 using library.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace library.Infrastructure.Repositories;
 
-public class CustomerRepository : ICustomerRepository {
+/// <summary>
+/// Repository for managing Customer entities.
+/// Provides CRUD methods for customers.
+/// </summary>
+public class CustomerRepository : ICustomerRepository 
+{
     private readonly AppDbContext _context;
 
-    public CustomerRepository(AppDbContext context) {
+    /// <summary>
+    /// Initializes a new instance of <see cref="CustomerRepository"/>.
+    /// </summary>
+    public CustomerRepository(AppDbContext context) 
+    {
         _context = context;
     }
 
+    /// <summary>Gets all customers.</summary>
     public async Task<IEnumerable<Customer>> GetAllAsync() =>
         await _context.Customers.ToListAsync();
 
+    /// <summary>Gets a customer by its ID.</summary>
+    /// <param name="id">Customer ID.</param>
+    /// <returns>The <see cref="Customer"/> if found; otherwise, null.</returns>
     public async Task<Customer?> GetByIdAsync(int id) => 
         await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
 
+    /// <summary>Checks if a customer exists by ID.</summary>
+    /// <param name="id">Customer ID.</param>
+    /// <returns>True if exists; otherwise, false.</returns>
     public async Task<bool> ExistsById(int id) => 
         await _context.Customers.AnyAsync(b => b.Id == id);
 
-    public async Task AddAsync(Customer customer) {
+    /// <summary>Adds a new customer.</summary>
+    /// <param name="customer">Customer to add.</param>
+    public async Task AddAsync(Customer customer) 
+    {
         if (customer == null) throw new ArgumentNullException(nameof(customer));
         await _context.Customers.AddAsync(customer);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Customer customer) {
+    /// <summary>Updates an existing customer.</summary>
+    /// <param name="customer">Customer with updated data.</param>
+    public async Task UpdateAsync(Customer customer) 
+    {
         if (customer == null) throw new ArgumentNullException(nameof(customer));
         var existingCustomer = await _context.Customers.FindAsync(customer.Id);
         if (existingCustomer == null)
             throw new KeyNotFoundException($"Customer with Id {customer.Id} not found.");
-        existingCustomer.Update(customer.Name, customer.Address, customer.PhoneNumber);
+        existingCustomer.Update(
+            customer.Name, 
+            customer.Address, 
+            customer.PhoneNumber);
         _context.Customers.Update(existingCustomer);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id) {
+    /// <summary>Deletes a customer by ID.</summary>
+    /// <param name="id">Customer ID.</param>
+    public async Task DeleteAsync(int id) 
+    {
         var customer = await _context.Customers.FindAsync(id);
         if (customer == null)
             throw new KeyNotFoundException($"Customer with Id {id} not found.");

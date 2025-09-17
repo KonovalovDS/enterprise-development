@@ -1,16 +1,22 @@
-﻿using library.Domain.Entities;
+﻿using Xunit;
+
+using library.Domain.Entities;
 using library.Domain.Enums;
-using System.Linq;
-using Xunit;
 
 namespace library.Tests;
 
+/// <summary>
+/// Unit tests for domain layer.
+/// </summary>
 public class DomainTests
 {
     private readonly List<Book> _books = new();
     private readonly List<Customer> _customers = new();
     private readonly List<BorrowRecord> _borrowRecords = new();
 
+    /// <summary>
+    /// Initializes test data for books, customers, and borrow records.
+    /// </summary>
     public DomainTests()
     {
         _books = TestDataSeeder.GetBooksTestData();
@@ -18,6 +24,7 @@ public class DomainTests
         _borrowRecords = TestDataSeeder.GetBorrowRecordsTestData();
     }
 
+    /// <summary>Checks that all borrowed books are sorted by name.</summary>
     [Fact]
     public void AllBorrowedBooksSorted()
     {
@@ -25,17 +32,18 @@ public class DomainTests
             .Select(r => _books.FirstOrDefault(b => b.Id == r.BookId))
             .Where(b => b != null)
             .Distinct()
-            .OrderBy(b => b.Name)
+            .OrderBy(b => b!.Name)
             .ToList();
 
         Assert.NotEmpty(allBorrowedBooks);
         Assert.True(allBorrowedBooks.Count == 14);
         for (var i = 1; i < allBorrowedBooks.Count; i++)
         {
-            Assert.True(string.Compare(allBorrowedBooks[i - 1].Name, allBorrowedBooks[i].Name, StringComparison.Ordinal) <= 0);
+            Assert.True(string.Compare(allBorrowedBooks[i - 1]!.Name, allBorrowedBooks[i]!.Name, StringComparison.Ordinal) <= 0);
         }
     }
 
+    /// <summary>Verifies top five customers by borrow count in a period.</summary>
     [Fact]
     public void TopFiveCustomersInfo()
     {
@@ -59,9 +67,10 @@ public class DomainTests
 
         Assert.NotEmpty(topFiveCustomers);
         Assert.Equal(5, topFiveCustomers.Count);
-        Assert.Equal(expectedNames, topFiveCustomers.Select(c => c.Name).ToList());
+        Assert.Equal(expectedNames, topFiveCustomers.Select(c => c!.Name).ToList()!);
     }
 
+    /// <summary>Ensures customers with the longest borrows are correctly identified and sorted.</summary>
     [Fact]
     public void LongestBorrowsSorted()
     {
@@ -89,15 +98,16 @@ public class DomainTests
         var topCustomers = customersWithMaxDuration
             .Where(x => x.MaxDuration == maxDuration)
             .Select(x => x.Customer)
-            .OrderBy(c => c.Name)
+            .OrderBy(c => c!.Name)
             .ToList();
 
-        var topCustomerNames = topCustomers.Select(c => c.Name).ToList();
+        var topCustomerNames = topCustomers.Select(c => c!.Name).ToList();
 
         Assert.Equal(expectedMaxDuration, maxDuration);
-        Assert.Equal(expectedNames, topCustomerNames);
+        Assert.Equal(expectedNames, topCustomerNames!);
     }
 
+    /// <summary>Checks top five publishers by borrow count in the last year.</summary>
     [Fact]
     public void TopFivePublishersLastYear()
     {
@@ -129,10 +139,11 @@ public class DomainTests
         Assert.True(topPublishers.Count == 5);
         foreach (var item in topPublishers)
         {
-            Assert.True(expectedPublishers.Contains((Publisher)item.Publisher));
+            Assert.Contains((Publisher)item.Publisher!, expectedPublishers);
         }
     }
 
+    /// <summary>Verifies top five least popular books by borrow count.</summary>
     [Fact]
     public void TopFiveLeastPopularBooks()
     {
@@ -160,6 +171,6 @@ public class DomainTests
 
         Assert.NotEmpty(bookCounts);
         Assert.Equal(5, bookCounts.Count);
-        Assert.Equal(expectedNames, leastPopularBookNames);
+        Assert.Equal(expectedNames, leastPopularBookNames!);
     }
 };
