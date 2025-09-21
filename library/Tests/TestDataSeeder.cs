@@ -9,10 +9,9 @@ namespace Tests;
 public static class TestDataSeeder
 {
     /// <summary>
-    /// Returns a list of sample <see cref="Customer"/> objects for testing.
+    /// A list of sample <see cref="Customer"/> objects for testing.
     /// </summary>
-    /// <returns>List of <see cref="Customer"/> instances.</returns>
-    public static List<Customer> GetCustomersTestData() =>
+    public static List<Customer> CustomersTestData =>
     [
         new(1, "Ivanov Ivan Ivanovich", "Samara, ul. Moskovskaya", "88005553535"),
         new(2, "Volkov Alexander Yurevych", "Balakovo, ul. Lenina", "89271244028"),
@@ -27,10 +26,9 @@ public static class TestDataSeeder
     ];
 
     /// <summary>
-    /// Returns a list of sample <see cref="Book"/> objects for testing.
+    /// A list of sample <see cref="Book"/> objects for testing.
     /// </summary>
-    /// <returns>List of <see cref="Book"/> instances.</returns>
-    public static List<Book> GetBooksTestData() =>
+    public static List<Book> BooksTestData =>
     [
         new(1, "", "J.K. Rowling", "The Philosopher's Stone", 1997, Publisher.NewEraPublishing, PublishingType.Hardcover),
         new(2, "", "George Orwell", "1984", 1949, Publisher.WhiteLine, PublishingType.Hardcover),
@@ -55,10 +53,9 @@ public static class TestDataSeeder
     ];
 
     /// <summary>
-    /// Returns a list of sample <see cref="BorrowRecord"/> objects for testing.
+    /// A list of sample <see cref="BorrowRecord"/> objects for testing.
     /// </summary>
-    /// <returns>List of <see cref="BorrowRecord"/> instances.</returns>
-    public static List<BorrowRecord> GetBorrowRecordsTestData() =>
+    public static List<BorrowRecord> BorrowRecordsTestData =>
     [
         new(1, 1, 3, new DateOnly(2025, 4, 19), 12),
         new(2, 5, 4, new DateOnly(2025, 5, 18), 29),
@@ -76,7 +73,7 @@ public static class TestDataSeeder
         new(14, 2, 7, new DateOnly(2025, 4, 27), 8),
         new(15, 5, 3, new DateOnly(2025, 4, 10), 20),
         new(16, 10, 9, new DateOnly(2025, 7, 19), 16),
-        new(17, 4, 1, new DateOnly(2025, 5, 16), 15),
+        new(17, 4, 1, new DateOnly(2025, 5, 18), 20),
         new(18, 9, 2, new DateOnly(2025, 1, 23), 25),
         new(19, 14, 2, new DateOnly(2025, 7, 30), 30),
         new(20, 16, 4, new DateOnly(2025, 8, 19), 6)

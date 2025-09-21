@@ -8,9 +8,9 @@ namespace library.Domain.Entities;
 public class Book 
 {
     public int Id { get; private set; }
-    public string? Code { get; private set; }
-    public string? Author { get; private set; }
-    public string? Name { get; private set; }
+    public string Code { get; private set; }
+    public string Author { get; private set; }
+    public string Name { get; private set; }
     public Publisher Publisher { get; private set; }
     public PublishingType PublishingType { get; private set; }
     public int PublicationYear { get; private set; }
@@ -25,15 +25,15 @@ public class Book
     /// </summary>
     /// <param name="code">Book code. If null or whitespace, it will be generated.</param>
     /// <param name="author">Author of the book. Cannot be null.</param>
-    /// <param name="name">Name (title) of the book. Cannot be null.</param>
+    /// <param name="name">Title of the book. Cannot be null.</param>
     /// <param name="year">Publication year.</param>
     /// <param name="publisher">Publisher of the book.</param>
     /// <param name="publishingType">Type of publishing.</param>
     /// <exception cref="ArgumentNullException">Thrown if author or name is null.</exception>
     public Book(
-        string? code, 
-        string? author, 
-        string? name, 
+        string code, 
+        string author, 
+        string name, 
         int year, 
         Publisher publisher, 
         PublishingType publishingType)
