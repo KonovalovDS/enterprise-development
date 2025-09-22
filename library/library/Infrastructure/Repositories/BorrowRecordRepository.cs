@@ -10,35 +10,39 @@ namespace library.Infrastructure.Repositories;
 /// Repository for managing BorrowRecord entities.
 /// Provides CRUD methods for records.
 /// </summary>
-public class BorrowRecordRepository : IBorrowRecordRepository 
+/// <param name="context">The application's database context used for data access.</param>
+public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordRepository 
 {
-    private readonly AppDbContext _context;
+    /// <summary>
+    /// The application's database context used for data access.
+    /// </summary>
+    private readonly AppDbContext _context = context;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="BorrowRecordRepository"/>.
+    /// Gets all borrow records.
     /// </summary>
-    public BorrowRecordRepository(AppDbContext context) 
-    {
-        _context = context;
-    }
-
-    /// <summary>Gets all borrow records.</summary>
     public async Task<IEnumerable<BorrowRecord>> GetAllAsync() => 
         await _context.BorrowRecords.ToListAsync();
 
-    /// <summary>Gets a borrow record by its ID.</summary>
+    /// <summary>
+    /// Gets a borrow record by its ID.
+    /// </summary>
     /// <param name="id">Record ID.</param>
     /// <returns>The <see cref="BorrowRecord"/> if found; otherwise, null.</returns>
     public async Task<BorrowRecord?> GetByIdAsync(int id) => 
         await _context.BorrowRecords.FirstOrDefaultAsync(r => r.Id == id);
 
-    /// <summary>Checks if a borrow record exists by ID.</summary>
+    /// <summary>
+    /// Checks if a borrow record exists by ID.
+    /// </summary>
     /// <param name="id">Record ID.</param>
     /// <returns>True if exists; otherwise, false.</returns>
     public async Task<bool> ExistsById(int id) => 
         await _context.BorrowRecords.AnyAsync(b => b.Id == id);
 
-    /// <summary>Adds a new borrow record.</summary>
+    /// <summary>
+    /// Adds a new borrow record.
+    /// </summary>
     /// <param name="record">Record to add.</param>
     public async Task AddAsync(BorrowRecord record) 
     {
@@ -48,7 +52,9 @@ public class BorrowRecordRepository : IBorrowRecordRepository
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Updates an existing borrow record.</summary>
+    /// <summary>
+    /// Updates an existing borrow record.
+    /// </summary>
     /// <param name="record">Record with updated data.</param>
     public async Task UpdateAsync(BorrowRecord record) 
     {
@@ -66,7 +72,9 @@ public class BorrowRecordRepository : IBorrowRecordRepository
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Deletes a borrow record by ID.</summary>
+    /// <summary>
+    /// Deletes a borrow record by ID.
+    /// </summary>
     /// <param name="id">Record ID.</param>
     public async Task DeleteAsync(int id) 
     {

@@ -8,28 +8,34 @@ namespace library.Api.Controllers;
 /// <summary>
 /// Endpoints for managing borrow records.
 /// </summary>
+/// <param name="borrowRecordRepository">Repository for accessing borrow records.</param>
+/// <param name="bookRepository">Repository for accessing books.</param>
+/// <param name="customerRepository">Repository for accessing customers.</param>
 [ApiController]
 [Route("api/records")]
-public class BorrowRecordController : Controller
+public class BorrowRecordController(
+    IBorrowRecordRepository borrowRecordRepository,
+    IBookRepository bookRepository,
+    ICustomerRepository customerRepository) : Controller
 {
-    private readonly IBorrowRecordRepository _borrowRecordRepository;
-    private readonly IBookRepository _bookRepository;
-    private readonly ICustomerRepository _customerRepository;
+    /// <summary>
+    /// Repository for borrow records.
+    /// </summary>
+    private readonly IBorrowRecordRepository _borrowRecordRepository = borrowRecordRepository;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="BorrowRecordController"/>.
+    /// Repository for books.
     /// </summary>
-    public BorrowRecordController(
-        IBorrowRecordRepository borrowRecordRepository, 
-        IBookRepository bookRepository, 
-        ICustomerRepository customerRepository)
-    {
-        _borrowRecordRepository = borrowRecordRepository;
-        _bookRepository = bookRepository;
-        _customerRepository = customerRepository;
-    }
+    private readonly IBookRepository _bookRepository = bookRepository;
 
-    /// <summary>Get all borrow records.</summary>
+    /// <summary>
+    /// Repository for customers.
+    /// </summary>
+    private readonly ICustomerRepository _customerRepository = customerRepository;
+
+    /// <summary>
+    /// Get all borrow records.
+    /// </summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllRecords()
     {
@@ -37,7 +43,10 @@ public class BorrowRecordController : Controller
         return Ok(records);
     }
 
-    /// <summary>Get a borrow record by ID.</summary>
+    /// <summary>
+    /// Get a borrow record by ID.
+    /// </summary>
+    /// <param name="id">The ID of the record to get.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetRecordById(int id)
     {
@@ -53,7 +62,10 @@ public class BorrowRecordController : Controller
         return Ok(record);
     }
 
-    /// <summary>Delete a borrow record by ID.</summary>
+    /// <summary>
+    /// Delete a borrow record by ID.
+    /// summary>
+    /// <param name="id">The ID of the record to delete.</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteRecordById(int id)
     {
@@ -64,10 +76,15 @@ public class BorrowRecordController : Controller
         return NoContent();
     }
 
-    /// <summary>Create a new borrow record.</summary>
+    /// <summary>
+    /// Create a new borrow record.
+    /// </summary>
+    /// <param name="newRecord">The borrow record object to create.</param>
     [HttpPost("")]
     public async Task<IActionResult> CreateRecord([FromBody] BorrowRecord newRecord)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var isBookExists = await _bookRepository.ExistsById(newRecord.BookId);
         var isCustomerExists = await _customerRepository.ExistsById(newRecord.CustomerId);
 
@@ -77,10 +94,16 @@ public class BorrowRecordController : Controller
         return CreatedAtAction(nameof(GetRecordById), new { id = newRecord.Id }, newRecord);
     }
 
-    /// <summary>Create a new borrow record.</summary>
+    /// <summary>
+    /// Create a new borrow record.
+    /// </summary>
+    /// <param name="id">The ID of the record to update.</param>
+    /// <param name="updated">The updated record object.</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecord updated)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var isBookExists = await _bookRepository.ExistsById(updated.BookId);
         var isCustomerExists = await _customerRepository.ExistsById(updated.CustomerId);
 

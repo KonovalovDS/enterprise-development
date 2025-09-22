@@ -8,21 +8,19 @@ namespace library.Api.Controllers;
 /// <summary>
 /// Endpoints for managing customers.
 /// </summary>
+/// <param name="customerRepository">Repository for accessing customer data.</param>
 [ApiController]
 [Route("api/customers")]
-public class CustomerController : Controller
+public class CustomerController(ICustomerRepository customerRepository) : Controller
 {
-    private readonly ICustomerRepository _customerRepository;
+    /// <summary>
+    /// Repository for accessing customer data.
+    /// </summary>
+    private readonly ICustomerRepository _customerRepository = customerRepository;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="CustomerController"/>.
+    /// Get all customers.
     /// </summary>
-    public CustomerController(ICustomerRepository customerRepository)
-    {
-        _customerRepository = customerRepository;
-    }
-
-    /// <summary>Get all customers.</summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllCustomers()
     {
@@ -30,7 +28,10 @@ public class CustomerController : Controller
         return Ok(customers);
     }
 
-    /// <summary>Get a customer by ID.</summary>
+    /// <summary>
+    /// Get a customer by ID.
+    /// </summary>
+    /// <param name="id">The ID of the customer to get.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetCustomerById(int id)
     {
@@ -40,7 +41,10 @@ public class CustomerController : Controller
         return Ok(customer);
     }
 
-    /// <summary>Delete a customer by ID.</summary>
+    /// <summary>
+    /// Delete a customer by ID.
+    /// </summary>
+    /// <param name="id">The ID of the customer to delete.</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCustomerById(int id)
     {
@@ -51,7 +55,10 @@ public class CustomerController : Controller
         return NoContent();
     }
 
-    /// <summary>Create a new customer.</summary>
+    /// <summary>
+    /// Create a new customer.
+    /// </summary>
+    /// <param name="newCustomer">The customer object to create.</param>
     [HttpPost("")]
     public async Task<IActionResult> CreateCustomer([FromBody] Customer newCustomer)
     {
@@ -61,7 +68,11 @@ public class CustomerController : Controller
         return CreatedAtAction(nameof(GetCustomerById), new { id = newCustomer.Id }, newCustomer);
     }
 
-    /// <summary>Update an existing customer by ID.</summary>
+    /// <summary>
+    /// Update an existing customer by ID.
+    /// </summary>
+    /// <param name="id">The ID of the customer to update.</param>
+    /// <param name="updated">The updated customer object.</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateCustomer(int id, [FromBody] Customer updated)
     {

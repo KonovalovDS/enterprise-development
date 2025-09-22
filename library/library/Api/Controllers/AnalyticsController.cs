@@ -7,21 +7,19 @@ namespace library.Api.Controllers;
 /// <summary>
 /// Analytics endpoints for books, customers, and publishers.
 /// </summary>
+/// <param name="analyticsService">Service that provides analytics operations.</param>
 [ApiController]
 [Route("api/analytics")]
-public class AnalyticsController : Controller
+public class AnalyticsController(AnalyticsService analyticsService) : Controller
 {
-    private readonly AnalyticsService _analyticsService;
+    /// <summary>
+    /// Service for performing analytics operations.
+    /// </summary>
+    private readonly AnalyticsService _analyticsService = analyticsService;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="AnalyticsController"/>.
+    /// All borrowed books sorted by name.
     /// </summary>
-    public AnalyticsController(AnalyticsService analyticsService)
-    {
-        _analyticsService = analyticsService;
-    }
-
-    /// <summary>All borrowed books sorted by name.</summary>
     [HttpGet("borrowed-books")]
     public async Task<IActionResult> GetAllBorrowedBooksSorted()
     {
@@ -29,7 +27,11 @@ public class AnalyticsController : Controller
         return Ok(result);
     }
 
-    /// <summary>Top five customers in a given period.</summary>
+    /// <summary>
+    /// Top five customers in a given period.
+    /// </summary>
+    /// <param name="start">Start date of the period.</param>
+    /// <param name="end">End date of the period.</param>
     [HttpGet("top-customers")]
     public async Task<IActionResult> GetTopFiveCustomers([FromQuery] DateOnly start, [FromQuery] DateOnly end)
     {
@@ -37,7 +39,9 @@ public class AnalyticsController : Controller
         return Ok(result);
     }
 
-    /// <summary>Customers with longest borrows.</summary>
+    /// <summary>
+    /// Customers with longest borrows.
+    /// </summary>
     [HttpGet("longest-borrows")]
     public async Task<IActionResult> GetCustomersWithLongestBorrows()
     {
@@ -45,7 +49,11 @@ public class AnalyticsController : Controller
         return Ok(result);
     }
 
-    /// <summary>Top five publishers in a given period.</summary>
+    /// <summary>
+    /// Top five publishers in a given period.
+    /// </summary>
+    /// <param name="start">Start date of the period.</param>
+    /// <param name="end">End date of the period.</param>
     [HttpGet("top-publishers")]
     public async Task<IActionResult> GetTopFivePublishersLastYear([FromQuery] DateOnly start, [FromQuery] DateOnly end)
     {
@@ -53,7 +61,9 @@ public class AnalyticsController : Controller
         return Ok(result);
     }
 
-    /// <summary>Top five least popular books.</summary>
+    /// <summary>
+    /// Top five least popular books.
+    /// </summary>
     [HttpGet("least-popular-books")]
     public async Task<IActionResult> GetTopFiveLeastPopularBooks()
     {

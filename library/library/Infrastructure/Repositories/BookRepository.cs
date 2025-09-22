@@ -10,35 +10,39 @@ namespace library.Infrastructure.Repositories;
 /// Repository for managing Book entities.
 /// Provides CRUD methods for books.
 /// </summary>
-public class BookRepository : IBookRepository 
+/// <param name="context">The application's database context used for data access.</param>
+public class BookRepository(AppDbContext context) : IBookRepository 
 {
-    private readonly AppDbContext _context;
+    /// <summary>
+    /// The application's database context used for data access.
+    /// </summary>
+    private readonly AppDbContext _context = context;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="BookRepository"/>.
+    /// Gets all books.
     /// </summary>
-    public BookRepository(AppDbContext context) 
-    {
-        _context = context;
-    }
-
-    /// <summary>Gets all books.</summary>
     public async Task<IEnumerable<Book>> GetAllAsync() => 
         await _context.Books.ToListAsync();
 
-    /// <summary>Gets a book by its ID.</summary>
+    /// <summary>
+    /// Gets a book by its ID.
+    /// </summary>
     /// <param name="id">Book ID.</param>
     /// <returns>The <see cref="Book"/> if found; otherwise, null.</returns>
     public async Task<Book?> GetByIdAsync(int id) => 
         await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
 
-    /// <summary>Checks if a book exists by ID.</summary>
+    /// <summary>
+    /// Checks if a book exists by ID.
+    /// </summary>
     /// <param name="id">Book ID.</param>
     /// <returns>True if exists; otherwise, false.</returns>
     public async Task<bool> ExistsById(int id) => 
         await _context.Books.AnyAsync(b => b.Id == id);
 
-    /// <summary>Adds a new book.</summary>
+    /// <summary>
+    /// Adds a new book.
+    /// </summary>
     /// <param name="book">Book to add.</param>
     public async Task AddAsync(Book book) 
     {
@@ -47,7 +51,9 @@ public class BookRepository : IBookRepository
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Updates an existing book.</summary>
+    /// <summary>
+    /// Updates an existing book.
+    /// </summary>
     /// <param name="book">Book with updated data.</param>
     public async Task UpdateAsync(Book book) 
     {
@@ -66,7 +72,9 @@ public class BookRepository : IBookRepository
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Deletes a book by ID.</summary>
+    /// <summary>
+    /// Deletes a book by ID.
+    /// </summary>
     /// <param name="id">Book ID.</param>
     public async Task DeleteAsync(int id) 
     {

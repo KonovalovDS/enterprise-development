@@ -9,8 +9,19 @@ namespace library.Infrastructure.Persistence;
 /// </summary>
 public class AppDbContext : DbContext 
 {
+    /// <summary>
+    /// DbSet of books in the library.
+    /// </summary>
     public DbSet<Book> Books { get; set; }
+
+    /// <summary>
+    /// DbSet of customers in the library.
+    /// </summary>
     public DbSet<Customer> Customers { get; set; }
+
+    /// <summary>
+    /// DbSet of borrow records, representing books borrowed by customers.
+    /// </summary>
     public DbSet<BorrowRecord> BorrowRecords { get; set; }
 
     /// <summary>
@@ -73,7 +84,8 @@ public class AppDbContext : DbContext
                .IsRequired();
         });
 
-        modelBuilder.Entity<BorrowRecord>(b => {
+        modelBuilder.Entity<BorrowRecord>(b => 
+        {
             b.HasKey(b => b.Id);
             b.Property(b => b.Id)
                 .ValueGeneratedOnAdd();

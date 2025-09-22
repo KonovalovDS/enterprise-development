@@ -7,27 +7,28 @@ namespace library.Application.Services;
 /// <summary>
 /// Provides analytics operations related to books, customers and borrow records.
 /// </summary>
-public class AnalyticsService
+/// <param name="borrowRecordRepository">Repository for accessing borrow records.</param>
+/// <param name="bookRepository">Repository for accessing books.</param>
+/// <param name="customerRepository">Repository for accessing customers.</param>
+public class AnalyticsService(
+    IBorrowRecordRepository borrowRecordRepository,
+    IBookRepository bookRepository,
+    ICustomerRepository customerRepository)
 {
-    private readonly IBorrowRecordRepository _borrowRecordRepository;
-    private readonly IBookRepository _bookRepository;
-    private readonly ICustomerRepository _customerRepository;
+    /// <summary>
+    /// Repository for borrow records.
+    /// </summary>
+    private readonly IBorrowRecordRepository _borrowRecordRepository = borrowRecordRepository;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AnalyticsService"/> class.
+    /// Repository for books.
     /// </summary>
-    /// <param name="borrowRecordRepository">Repository for borrow records.</param>
-    /// <param name="bookRepository">Repository for books.</param>
-    /// <param name="customerRepository">Repository for customers.</param>
-    public AnalyticsService(
-        IBorrowRecordRepository borrowRecordRepository,
-        IBookRepository bookRepository,
-        ICustomerRepository customerRepository)
-    {
-        _borrowRecordRepository = borrowRecordRepository;
-        _bookRepository = bookRepository;
-        _customerRepository = customerRepository;
-    }
+    private readonly IBookRepository _bookRepository = bookRepository;
+
+    /// <summary>
+    /// Repository for customers.
+    /// </summary>
+    private readonly ICustomerRepository _customerRepository = customerRepository;
 
     /// <summary>
     /// Returns all borrowed books and sorts them by name.

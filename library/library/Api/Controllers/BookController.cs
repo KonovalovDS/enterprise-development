@@ -8,21 +8,19 @@ namespace library.Api.Controllers;
 /// <summary>
 /// Endpoints for managing books.
 /// </summary>
+/// <param name="bookRepository">Repository for accessing book data.</param>
 [ApiController]
 [Route("api/books")]
-public class BookController : Controller
+public class BookController(IBookRepository bookRepository) : Controller
 {
-    private readonly IBookRepository _bookRepository;
+    /// <summary>
+    /// Repository for accessing book data.
+    /// </summary>
+    private readonly IBookRepository _bookRepository = bookRepository;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="BookController"/>.
+    /// Get all books.
     /// </summary>
-    public BookController(IBookRepository bookRepository)
-    {
-        _bookRepository = bookRepository;
-    }
-
-    /// <summary>Get all books.</summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllBooks()
     {
@@ -30,7 +28,10 @@ public class BookController : Controller
         return Ok(books);
     }
 
-    /// <summary>Get a book by its ID.</summary>
+    /// <summary>
+    /// Get a book by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the book to get.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetBookById(int id)
     {
@@ -40,7 +41,10 @@ public class BookController : Controller
         return Ok(book);
     }
 
-    /// <summary>Delete a book by its ID.</summary>
+    /// <summary>
+    /// Delete a book by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the book to delete.</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteBookById(int id)
     {
@@ -51,7 +55,10 @@ public class BookController : Controller
         return NoContent();
     }
 
-    /// <summary>Create a new book.</summary>
+    /// <summary>
+    /// Create a new book.
+    /// </summary>
+    /// <param name="newBook">The book object to create.</param>
     [HttpPost("")]
     public async Task<IActionResult> CreateBook([FromBody] Book newBook)
     {
@@ -61,7 +68,11 @@ public class BookController : Controller
         return CreatedAtAction(nameof(GetBookById), new { id = newBook.Id }, newBook);
     }
 
-    /// <summary>Update an existing book by ID.</summary>
+    /// <summary>
+    /// Update an existing book by ID.
+    /// </summary>
+    /// <param name="id">The ID of the book to update.</param>
+    /// <param name="updated">The updated book object.</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateBook(int id, [FromBody] Book updated)
     {
