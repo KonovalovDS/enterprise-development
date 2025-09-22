@@ -1,4 +1,4 @@
-﻿using library.Domain.Enums;
+﻿using Domain.Enums;
 
 namespace Tests;
 

@@ -1,43 +1,29 @@
-using Microsoft.EntityFrameworkCore;
-
-using library.Application.Services;
-using library.Domain.Interfaces;
-using library.Infrastructure.Persistence;
-using library.Infrastructure.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "DefaultConnection");
-
-builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
-
-builder.Services.AddScoped<AnalyticsService>();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add services to the container.
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+app.MapDefaultEndpoints();
 
-if (app.Environment.IsDevelopment())
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
 app.UseAuthorization();
-app.MapDefaultEndpoints();
-app.MapControllers();
+
+app.MapRazorPages();
 
 app.Run();

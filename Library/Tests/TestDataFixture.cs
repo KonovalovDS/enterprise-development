@@ -1,4 +1,4 @@
-﻿using library.Domain.Entities;
+﻿using Domain.Entities;
 
 namespace Tests;
 

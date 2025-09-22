@@ -1,5 +1,5 @@
-﻿using library.Domain.Entities;
-using library.Domain.Enums;
+﻿using Domain.Entities;
+using Domain.Enums;
 
 namespace Tests;
 
