@@ -4,10 +4,12 @@ namespace Tests;
 
 /// <summary>
 /// Unit tests for domain layer.
-/// </summary>  
+/// </summary>
+/// <param name="fixture">
+/// The test fixture that supplies test data for domain tests.
+/// </param>
 public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixture>
 {
-    private readonly TestDataFixture _fixture = fixture;
 
     /// <summary>
     /// Checks that all borrowed books are sorted by name.
@@ -18,9 +20,9 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
         var currentDate = new DateOnly(2025, 6, 1);
         var expectedCount = 3;
 
-        var allBorrowedBooks = _fixture.BorrowRecords
+        var allBorrowedBooks = fixture.BorrowRecords
             .Where(r => r.BorrowDate <= currentDate && r.BorrowDate.AddDays(r.BorrowDuration) >= currentDate)
-            .Select(r => _fixture.Books.First(b => b.Id == r.BookId))
+            .Select(r => fixture.Books.First(b => b.Id == r.BookId))
             .Distinct()
             .OrderBy(b => b.Title)
             .ToList();
@@ -46,12 +48,12 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             "Petrov Artyom Aleksandrovich"
         };
 
-        var topFiveCustomers = _fixture.BorrowRecords
+        var topFiveCustomers = fixture.BorrowRecords
             .Where(r => r.BorrowDate >= periodStart && r.BorrowDate.AddDays(r.BorrowDuration) <= periodEnd)
             .GroupBy(r => r.CustomerId)
             .OrderByDescending(x => x.Count())
             .Take(5)
-            .Select(g => _fixture.Customers.First(c => c.Id == g.Key))
+            .Select(g => fixture.Customers.First(c => c.Id == g.Key))
             .ToList();
 
         var topFiveCustomerNames = topFiveCustomers.Select(c => c.Name).ToList();
@@ -73,11 +75,11 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             "Volkov Alexander Yurevych"
         };
 
-        var customersWithMaxDuration = _fixture.BorrowRecords
+        var customersWithMaxDuration = fixture.BorrowRecords
             .GroupBy(r => r.CustomerId)
             .Select(x => new
             {
-                Customer = _fixture.Customers.First(c => c.Id == x.Key),
+                Customer = fixture.Customers.First(c => c.Id == x.Key),
                 MaxDuration = x.Max(r => r.BorrowDuration)
             })
             .OrderByDescending(x => x.MaxDuration)
@@ -115,9 +117,9 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             Publisher.IntellectPublishing
         };
 
-        var topPublishers = _fixture.BorrowRecords
+        var topPublishers = fixture.BorrowRecords
             .Where(r => r.BorrowDate >= periodStart && r.BorrowDate.AddDays(r.BorrowDuration) <= periodEnd)
-            .Select(r => _fixture.Books.FirstOrDefault(b => b.Id == r.BookId)?.Publisher)
+            .Select(r => fixture.Books.FirstOrDefault(b => b.Id == r.BookId)?.Publisher)
             .GroupBy(p => p)
             .Select(x => new
             {
@@ -148,11 +150,11 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             "The Shining"
         };
 
-        var bookCounts = _fixture.Books
+        var bookCounts = fixture.Books
             .Select(b => new
             {
                 Book = b,
-                BorrowCount = _fixture.BorrowRecords.Count(r => r.BookId == b.Id)
+                BorrowCount = fixture.BorrowRecords.Count(r => r.BookId == b.Id)
             })
             .OrderBy(x => x.BorrowCount)
             .ThenBy(x => x.Book.Title)
