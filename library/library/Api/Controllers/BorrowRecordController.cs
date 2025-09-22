@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using library.Api.DTOs;
 using library.Domain.Entities;
 using library.Domain.Interfaces;
 
@@ -10,7 +9,7 @@ namespace library.Api.Controllers;
 /// Endpoints for managing borrow records.
 /// </summary>
 [ApiController]
-[Route("records")]
+[Route("api/records")]
 public class BorrowRecordController : Controller
 {
     private readonly IBorrowRecordRepository _borrowRecordRepository;
@@ -51,15 +50,6 @@ public class BorrowRecordController : Controller
         if (book == null || customer == null)
             return Conflict("Book or Customer not found");
 
-        var recordDto = new BorrowRecordDto { 
-            BookId = record.BookId, 
-            CustomerId = record.CustomerId,
-            BorrowDate = record.BorrowDate,
-            BorrowDuration = record.BorrowDuration,
-            BookName = book.Name!, 
-            CustomerName = customer.Name!
-        };
-
         return Ok(record);
     }
 
@@ -68,45 +58,39 @@ public class BorrowRecordController : Controller
     public async Task<IActionResult> DeleteRecordById(int id)
     {
         var isExists = await _borrowRecordRepository.ExistsById(id);
-        if (!isExists)
-            return NotFound();
+        if (!isExists) return NotFound();
+
         await _borrowRecordRepository.DeleteAsync(id);
         return NoContent();
     }
 
     /// <summary>Create a new borrow record.</summary>
     [HttpPost("")]
-    public async Task<IActionResult> CreateRecord([FromBody] BorrowRecordDto dto)
+    public async Task<IActionResult> CreateRecord([FromBody] BorrowRecord newRecord)
     {
-        var isBookExists = await _bookRepository.ExistsById(dto.BookId);
-        var isCustomerExists = await _customerRepository.ExistsById(dto.CustomerId);
+        var isBookExists = await _bookRepository.ExistsById(newRecord.BookId);
+        var isCustomerExists = await _customerRepository.ExistsById(newRecord.CustomerId);
 
-        if (!isBookExists || !isCustomerExists)
-            return NotFound();
+        if (!isBookExists || !isCustomerExists) return NotFound();
 
-        var record = new BorrowRecord(dto.BookId, dto.CustomerId, dto.BorrowDuration);
-        await _borrowRecordRepository.AddAsync(record);
-
-        return CreatedAtAction(nameof(GetRecordById), new { id = record.Id }, record);
+        await _borrowRecordRepository.AddAsync(newRecord);
+        return CreatedAtAction(nameof(GetRecordById), new { id = newRecord.Id }, newRecord);
     }
 
     /// <summary>Create a new borrow record.</summary>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecordDto updated)
+    public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecord updated)
     {
         var isBookExists = await _bookRepository.ExistsById(updated.BookId);
         var isCustomerExists = await _customerRepository.ExistsById(updated.CustomerId);
 
-        if (!isBookExists || !isCustomerExists)
-            return NotFound();
+        if (!isBookExists || !isCustomerExists) return NotFound();
 
         var record = await _borrowRecordRepository.GetByIdAsync(id);
-        if (record == null)
-            return NotFound();
+        if (record == null) return NotFound();
 
-        record.Update(updated.BookId, updated.CustomerId, updated.BorrowDuration, updated.BorrowDate);
-        await _borrowRecordRepository.UpdateAsync(record);
-
+        updated.Id = record.Id;
+        await _borrowRecordRepository.UpdateAsync(updated);
         return NoContent();
     }
 }

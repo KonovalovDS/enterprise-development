@@ -55,12 +55,13 @@ public class BookRepository : IBookRepository
         var existingBook = await _context.Books.FindAsync(book.Id);
         if (existingBook == null)
             throw new KeyNotFoundException($"Book with Id {book.Id} not found.");
-        existingBook.Update(
-            book.Name, 
-            book.Author, 
-            book.PublicationYear, 
-            book.Publisher, 
-            book.PublishingType);
+
+        existingBook.Title = book.Title;
+        existingBook.Author = book.Author;
+        existingBook.PublicationYear = book.PublicationYear;
+        existingBook.Publisher = book.Publisher;
+        existingBook.PublishingType = book.PublishingType;
+
         _context.Books.Update(existingBook);
         await _context.SaveChangesAsync();
     }
@@ -72,6 +73,7 @@ public class BookRepository : IBookRepository
         var book = await _context.Books.FindAsync(id);
         if (book == null)
             throw new KeyNotFoundException($"Book with Id {id} not found.");
+
         _context.Books.Remove(book);
         await _context.SaveChangesAsync();
     }

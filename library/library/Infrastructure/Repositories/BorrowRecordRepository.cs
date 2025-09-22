@@ -43,6 +43,7 @@ public class BorrowRecordRepository : IBorrowRecordRepository
     public async Task AddAsync(BorrowRecord record) 
     {
         if (record == null) throw new ArgumentNullException(nameof(record));
+
         await _context.BorrowRecords.AddAsync(record);
         await _context.SaveChangesAsync();
     }
@@ -55,11 +56,12 @@ public class BorrowRecordRepository : IBorrowRecordRepository
         var existingRecord = await _context.BorrowRecords.FindAsync(record.Id);
         if (existingRecord == null)
             throw new KeyNotFoundException($"Record with Id {record.Id} not found.");
-        existingRecord.Update(
-            record.BookId, 
-            record.CustomerId, 
-            record.BorrowDuration, 
-            record.BorrowDate);
+
+        existingRecord.BookId = record.BookId;
+        existingRecord.CustomerId = record.CustomerId;
+        existingRecord.BorrowDuration = record.BorrowDuration;
+        existingRecord.BorrowDate = record.BorrowDate;
+
         _context.BorrowRecords.Update(existingRecord);
         await _context.SaveChangesAsync();
     }
@@ -71,6 +73,7 @@ public class BorrowRecordRepository : IBorrowRecordRepository
         var record = await _context.BorrowRecords.FindAsync(id);
         if (record == null)
             throw new KeyNotFoundException($"Record with Id {id} not found.");
+
         _context.BorrowRecords.Remove(record);
         await _context.SaveChangesAsync();
     }

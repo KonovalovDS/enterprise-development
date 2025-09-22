@@ -22,7 +22,7 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             .Where(r => r.BorrowDate <= currentDate && r.BorrowDate.AddDays(r.BorrowDuration) >= currentDate)
             .Select(r => _fixture.Books.First(b => b.Id == r.BookId))
             .Distinct()
-            .OrderBy(b => b.Name)
+            .OrderBy(b => b.Title)
             .ToList();
 
         Assert.Equal(allBorrowedBooks.Count, expectedCount);
@@ -155,11 +155,11 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
                 BorrowCount = _fixture.BorrowRecords.Count(r => r.BookId == b.Id)
             })
             .OrderBy(x => x.BorrowCount)
-            .ThenBy(x => x.Book.Name)
+            .ThenBy(x => x.Book.Title)
             .Take(5)
             .ToList();
 
-        var leastPopularBookNames = bookCounts.Select(x => x.Book.Name).ToList();
+        var leastPopularBookNames = bookCounts.Select(x => x.Book.Title).ToList();
 
         Assert.Equal(expectedCount, bookCounts.Count);
         Assert.Equal(expectedNames, leastPopularBookNames!);

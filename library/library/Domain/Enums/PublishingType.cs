@@ -3,7 +3,8 @@
 /// <summary>
 /// Represents the type or format of a book's publishing.
 /// </summary>
-public enum PublishingType {
+public enum PublishingType 
+{
     Hardcover,
     Paperback,
     Ebook,

@@ -43,6 +43,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task AddAsync(Customer customer) 
     {
         if (customer == null) throw new ArgumentNullException(nameof(customer));
+
         await _context.Customers.AddAsync(customer);
         await _context.SaveChangesAsync();
     }
@@ -55,10 +56,11 @@ public class CustomerRepository : ICustomerRepository
         var existingCustomer = await _context.Customers.FindAsync(customer.Id);
         if (existingCustomer == null)
             throw new KeyNotFoundException($"Customer with Id {customer.Id} not found.");
-        existingCustomer.Update(
-            customer.Name, 
-            customer.Address, 
-            customer.PhoneNumber);
+
+        existingCustomer.Name = customer.Name;
+        existingCustomer.Address = customer.Address;
+        existingCustomer.PhoneNumber = customer.PhoneNumber;
+
         _context.Customers.Update(existingCustomer);
         await _context.SaveChangesAsync();
     }
@@ -70,6 +72,7 @@ public class CustomerRepository : ICustomerRepository
         var customer = await _context.Customers.FindAsync(id);
         if (customer == null)
             throw new KeyNotFoundException($"Customer with Id {id} not found.");
+
         _context.Customers.Remove(customer);
         await _context.SaveChangesAsync();
     }

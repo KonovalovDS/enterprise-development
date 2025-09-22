@@ -42,7 +42,7 @@ public class AnalyticsService
             .Select(r => books.FirstOrDefault(b => b.Id == r.BookId))
             .Where(b => b != null)
             .Distinct()!
-            .OrderBy(b => b!.Name)
+            .OrderBy(b => b!.Title)
             .ToList()!;
 
         return allBorrowedBooks;
@@ -142,7 +142,7 @@ public class AnalyticsService
                 BorrowCount = records.Count(r => r.BookId == b.Id)
             })
             .OrderBy(x => x.BorrowCount)
-            .ThenBy(x => x.Book.Name)
+            .ThenBy(x => x.Book.Title)
             .Take(5)
             .Select(x => x.Book)
             .ToList();

@@ -3,7 +3,8 @@
 /// <summary>
 /// Represents the publisher of a book.
 /// </summary>
-public enum Publisher {
+public enum Publisher 
+{
     NorthernWord,
     BookMosaic,
     LiteraryWind,

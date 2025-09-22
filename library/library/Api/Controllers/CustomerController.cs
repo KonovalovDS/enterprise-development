@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using library.Api.DTOs;
 using library.Domain.Entities;
 using library.Domain.Interfaces;
 
@@ -37,6 +36,7 @@ public class CustomerController : Controller
     {
         var customer = await _customerRepository.GetByIdAsync(id);
         if (customer == null) return NotFound();
+
         return Ok(customer);
     }
 
@@ -46,26 +46,32 @@ public class CustomerController : Controller
     {
         var isExists = await _customerRepository.ExistsById(id);
         if (!isExists) return NotFound();
+
+        await _customerRepository.DeleteAsync(id);
         return NoContent();
     }
 
     /// <summary>Create a new customer.</summary>
     [HttpPost("")]
-    public async Task<IActionResult> CreateCustomer([FromBody] CustomerDto dto)
+    public async Task<IActionResult> CreateCustomer([FromBody] Customer newCustomer)
     {
-        var customer = new Customer(dto.Name, dto.Address, dto.PhoneNumber);
-        await _customerRepository.AddAsync(customer);
-        return CreatedAtAction(nameof(GetCustomerById), new { id = customer.Id }, customer);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        await _customerRepository.AddAsync(newCustomer);
+        return CreatedAtAction(nameof(GetCustomerById), new { id = newCustomer.Id }, newCustomer);
     }
 
     /// <summary>Update an existing customer by ID.</summary>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerDto updated)
+    public async Task<IActionResult> UpdateCustomer(int id, [FromBody] Customer updated)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var customer = await _customerRepository.GetByIdAsync(id);
         if (customer == null) return NotFound();
-        customer.Update(updated.Name, updated.Address, updated.PhoneNumber);
-        await _customerRepository.UpdateAsync(customer);
+
+        updated.Id = customer.Id;
+        await _customerRepository.UpdateAsync(updated);
         return NoContent();
     }
 }

@@ -40,7 +40,7 @@ public class AppDbContext : DbContext
                 .HasMaxLength(128);
             c.Property(c => c.PhoneNumber)
                 .IsRequired()
-                .HasMaxLength(12);
+                .HasMaxLength(13);
             c.Property(c => c.RegisterDate)
                 .IsRequired()
                 .HasColumnType("date");
@@ -51,13 +51,16 @@ public class AppDbContext : DbContext
             b.HasKey(b => b.Id);
             b.Property(b => b.Id)
                 .ValueGeneratedOnAdd();
+            b.Property(b => b.InventoryNumber)
+                .IsRequired()
+                .HasMaxLength(6);
             b.Property(b => b.Code)
                .IsRequired()
-               .HasMaxLength(3);
+               .HasMaxLength(2);
             b.Property(b => b.Author)
                .IsRequired()
                .HasMaxLength(128);
-            b.Property(b => b.Name)
+            b.Property(b => b.Title)
                .IsRequired()
                .HasMaxLength(128);
             b.Property(b => b.PublicationYear)

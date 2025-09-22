@@ -8,7 +8,7 @@ using library.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace library.Infrastructure.Persistence.Migrations
+namespace library.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -37,13 +37,13 @@ namespace library.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("InventoryNumber")
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
 
                     b.Property<int>("PublicationYear")
                         .HasColumnType("integer");
@@ -55,6 +55,11 @@ namespace library.Infrastructure.Persistence.Migrations
                     b.Property<string>("PublishingType")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.HasKey("Id");
 
@@ -110,8 +115,8 @@ namespace library.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("character varying(12)");
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.Property<DateOnly>("RegisterDate")
                         .HasColumnType("date");

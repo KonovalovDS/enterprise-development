@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using library.Api.DTOs;
 using library.Domain.Entities;
 using library.Domain.Interfaces;
 
@@ -37,6 +36,7 @@ public class BookController : Controller
     {
         var book = await _bookRepository.GetByIdAsync(id);
         if (book == null) return NotFound();
+
         return Ok(book);
     }
 
@@ -46,27 +46,32 @@ public class BookController : Controller
     {
         var isExists = await _bookRepository.ExistsById(id);
         if (!isExists) return NotFound();
+
         await _bookRepository.DeleteAsync(id);
         return NoContent();
     }
 
     /// <summary>Create a new book.</summary>
     [HttpPost("")]
-    public async Task<IActionResult> CreateBook([FromBody] BookDto dto)
+    public async Task<IActionResult> CreateBook([FromBody] Book newBook)
     {
-        var book = new Book("", dto.Author, dto.Name, dto.PublicationYear, dto.Publisher, dto.PublishingType);
-        await _bookRepository.AddAsync(book);
-        return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        await _bookRepository.AddAsync(newBook);
+        return CreatedAtAction(nameof(GetBookById), new { id = newBook.Id }, newBook);
     }
 
     /// <summary>Update an existing book by ID.</summary>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateBook(int id, [FromBody] BookDto updated)
+    public async Task<IActionResult> UpdateBook(int id, [FromBody] Book updated)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var book = await _bookRepository.GetByIdAsync(id);
         if (book == null) return NotFound();
-        book.Update(updated.Name, updated.Author, updated.PublicationYear, updated.Publisher, updated.PublishingType);
-        await _bookRepository.UpdateAsync(book);
+
+        updated.Id = book.Id;
+        await _bookRepository.UpdateAsync(updated);
         return NoContent();
     }
 }
