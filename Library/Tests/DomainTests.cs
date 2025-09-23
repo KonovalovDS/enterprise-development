@@ -5,9 +5,7 @@ namespace Tests;
 /// <summary>
 /// Unit tests for domain layer.
 /// </summary>
-/// <param name="fixture">
-/// The test fixture that supplies test data for domain tests.
-/// </param>
+/// <param name="fixture">The test fixture that supplies test data for domain tests.</param>
 public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixture>
 {
 
@@ -22,7 +20,10 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
 
         var allBorrowedBooks = fixture.BorrowRecords
             .Where(r => r.BorrowDate <= currentDate && r.BorrowDate.AddDays(r.BorrowDuration) >= currentDate)
-            .Select(r => fixture.Books.First(b => b.Id == r.BookId))
+            .Join(fixture.Books,
+                  r => r.BookId,
+                  b => b.Id,
+                  (r, b) => b)
             .Distinct()
             .OrderBy(b => b.Title)
             .ToList();
@@ -56,7 +57,9 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             .Select(g => fixture.Customers.First(c => c.Id == g.Key))
             .ToList();
 
-        var topFiveCustomerNames = topFiveCustomers.Select(c => c.Name).ToList();
+        var topFiveCustomerNames = topFiveCustomers
+            .Select(c => c.Name)
+            .ToList();
 
         Assert.Equal(expectedCount, topFiveCustomers.Count);
         Assert.Equal(expectedNames, topFiveCustomerNames!);
@@ -93,7 +96,9 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             .OrderBy(c => c.Name)
             .ToList();
 
-        var topCustomerNames = topCustomers.Select(c => c.Name).ToList();
+        var topCustomerNames = topCustomers
+            .Select(c => c.Name)
+            .ToList();
 
         Assert.Equal(expectedMaxDuration, maxDuration);
         Assert.Equal(expectedNames, topCustomerNames!);
@@ -161,7 +166,9 @@ public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixtur
             .Take(5)
             .ToList();
 
-        var leastPopularBookNames = bookCounts.Select(x => x.Book.Title).ToList();
+        var leastPopularBookNames = bookCounts
+            .Select(x => x.Book.Title)
+            .ToList();
 
         Assert.Equal(expectedCount, bookCounts.Count);
         Assert.Equal(expectedNames, leastPopularBookNames!);

@@ -66,8 +66,8 @@ public class AnalyticsService(
             .OrderByDescending(g => g.Count())
             .Take(5)
             .Select(g => customers.FirstOrDefault(c => c.Id == g.Key))
-            .Where(c => c != null)!
-            .ToList()!;
+            .Where(c => c != null)
+            .ToList();
 
         return topFiveCustomers;
     }
@@ -117,7 +117,7 @@ public class AnalyticsService(
         var topFivePublishers = records
             .Where(r => r.BorrowDate >= start && r.BorrowDate.AddDays(r.BorrowDuration) <= end)
             .Select(r => books.FirstOrDefault(b => b.Id == r.BookId)?.Publisher)
-            .Where(p => p != null)!
+            .Where(p => p != null)
             .GroupBy(p => p)
             .OrderByDescending(g => g.Count())
             .Take(5)
