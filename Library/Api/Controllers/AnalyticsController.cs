@@ -1,5 +1,7 @@
-﻿using Application.Services;
-
+﻿using Application.Dtos;
+using Application.Services;
+using AutoMapper;
+using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -16,9 +18,9 @@ public class AnalyticsController(AnalyticsService analyticsService) : Controller
     /// All borrowed books sorted by name.
     /// </summary>
     [HttpGet("borrowed-books")]
-    public async Task<IActionResult> GetAllBorrowedBooksSorted()
+    public async Task<IActionResult> GetAllBorrowedBooksSorted([FromQuery] DateOnly date)
     {
-        var result = await analyticsService.GetAllBorrowedBooksSortedAsync();
+        var result = await analyticsService.GetAllBorrowedBooksByDateSortedAsync(date);
         return Ok(result);
     }
 
@@ -50,9 +52,9 @@ public class AnalyticsController(AnalyticsService analyticsService) : Controller
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
     [HttpGet("top-publishers")]
-    public async Task<IActionResult> GetTopFivePublishersLastYear([FromQuery] DateOnly start, [FromQuery] DateOnly end)
+    public async Task<IActionResult> GetTopFivePublishersByDate([FromQuery] DateOnly start, [FromQuery] DateOnly end)
     {
-        var result = await analyticsService.GetTopFivePublishersLastYearAsync(start, end);
+        var result = await analyticsService.GetTopFivePublishersByDateAsync(start, end);
         return Ok(result);
     }
 

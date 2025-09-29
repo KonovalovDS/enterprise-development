@@ -4,12 +4,15 @@ using Application.Services;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
+using Application.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "DefaultConnection");
+
+builder.Services.AddAutoMapper(typeof(AppMappingProfile).Assembly);
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
@@ -27,6 +30,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    await DbSeeder.SeedBooksAsync(db);
+    await DbSeeder.SeedCustomersAsync(db);
+    await DbSeeder.SeedBorrowRecordsAsync(db);
 }
 
 if (app.Environment.IsDevelopment())

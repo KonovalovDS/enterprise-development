@@ -8,7 +8,6 @@ namespace Tests;
 /// <param name="fixture">The test fixture that supplies test data for domain tests.</param>
 public class DomainTests(TestDataFixture fixture) : IClassFixture<TestDataFixture>
 {
-
     /// <summary>
     /// Checks that all borrowed books are sorted by name.
     /// </summary>

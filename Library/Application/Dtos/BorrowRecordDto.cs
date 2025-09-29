@@ -1,15 +1,10 @@
-﻿namespace Domain.Entities;
+﻿namespace Application.Dtos;
 
 /// <summary>
-/// Represents a record of a book borrowed by a customer.
+/// Represents a dto for a record of a book borrowed by a customer with additional information.
 /// </summary>
-public class BorrowRecord
+public class BorrowRecordDto
 {
-    /// <summary>
-    /// Unique identifier of the borrow record.
-    /// </summary>
-    public int Id { get; set; }
-
     /// <summary>
     /// Identifier of the borrowed book.
     /// </summary>
@@ -29,4 +24,8 @@ public class BorrowRecord
     /// Duration of the borrow in days.
     /// </summary>
     public required int BorrowDuration { get; set; }
+
+    public string? BookTitle { get; set; }
+
+    public string? CustomerName { get; set; }
 }

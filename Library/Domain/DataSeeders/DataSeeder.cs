@@ -1,12 +1,12 @@
 ﻿using Domain.Entities;
 using Domain.Enums;
 
-namespace Tests;
+namespace Domain.DataSeeders;
 
 /// <summary>
 /// Provides test data for seeding the database.
 /// </summary>
-public static class TestDataSeeder
+public static class DataSeeder
 {
     /// <summary>
     /// A list of sample <see cref="Customer"/> objects for testing.

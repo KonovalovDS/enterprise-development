@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.DataSeeders;
 
 namespace Tests;
 
@@ -11,15 +12,15 @@ public class TestDataFixture
     /// <summary>
     /// List of books for testing.
     /// </summary>
-    public List<Book> Books { get; } = TestDataSeeder.BooksTestData;
+    public List<Book> Books { get; } = DataSeeder.BooksTestData;
 
     /// <summary>
     /// List of customers for testing.
     /// </summary>
-    public List<Customer> Customers { get; } = TestDataSeeder.CustomersTestData;
+    public List<Customer> Customers { get; } = DataSeeder.CustomersTestData;
 
     /// <summary>
     /// List of borrow records for testing.
     /// </summary>
-    public List<BorrowRecord> BorrowRecords { get; } = TestDataSeeder.BorrowRecordsTestData;
+    public List<BorrowRecord> BorrowRecords { get; } = DataSeeder.BorrowRecordsTestData;
 }

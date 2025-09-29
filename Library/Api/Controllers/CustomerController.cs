@@ -2,6 +2,9 @@
 
 using Domain.Entities;
 using Domain.Interfaces;
+using AutoMapper;
+using Application.Dtos;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 
@@ -11,7 +14,9 @@ namespace Api.Controllers;
 /// <param name="customerRepository">Repository for accessing customer data.</param>
 [ApiController]
 [Route("api/customers")]
-public class CustomerController(ICustomerRepository customerRepository) : Controller
+public class CustomerController(
+    ICustomerRepository customerRepository, 
+    IMapper mapper) : Controller
 {
     /// <summary>
     /// Get all customers.
@@ -20,7 +25,8 @@ public class CustomerController(ICustomerRepository customerRepository) : Contro
     public async Task<IActionResult> GetAllCustomers()
     {
         var customers = await customerRepository.GetAllAsync();
-        return Ok(customers);
+        var customersDto = mapper.Map<List<CustomerDto>>(customers);
+        return Ok(customersDto);
     }
 
     /// <summary>
@@ -33,7 +39,8 @@ public class CustomerController(ICustomerRepository customerRepository) : Contro
         var customer = await customerRepository.GetByIdAsync(id);
         if (customer == null) return NotFound();
 
-        return Ok(customer);
+        var customerDto = mapper.Map<CustomerDto>(customer);
+        return Ok(customerDto);
     }
 
     /// <summary>
@@ -55,10 +62,11 @@ public class CustomerController(ICustomerRepository customerRepository) : Contro
     /// </summary>
     /// <param name="newCustomer">The customer object to create.</param>
     [HttpPost("")]
-    public async Task<IActionResult> CreateCustomer([FromBody] Customer newCustomer)
+    public async Task<IActionResult> CreateCustomer([FromBody] CustomerDto newCustomerDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
+        var newCustomer = mapper.Map<Customer>(newCustomerDto);
         await customerRepository.AddAsync(newCustomer);
         return CreatedAtAction(nameof(GetCustomerById), new { id = newCustomer.Id }, newCustomer);
     }
@@ -69,15 +77,16 @@ public class CustomerController(ICustomerRepository customerRepository) : Contro
     /// <param name="id">The ID of the customer to update.</param>
     /// <param name="updated">The updated customer object.</param>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateCustomer(int id, [FromBody] Customer updated)
+    public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerDto updatedCustomerDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         var customer = await customerRepository.GetByIdAsync(id);
         if (customer == null) return NotFound();
 
-        updated.Id = customer.Id;
-        await customerRepository.UpdateAsync(updated);
+        var updatedCustomer = mapper.Map<Customer>(updatedCustomerDto);
+        updatedCustomer.Id = customer.Id;
+        await customerRepository.UpdateAsync(updatedCustomer);
         return NoContent();
     }
 }

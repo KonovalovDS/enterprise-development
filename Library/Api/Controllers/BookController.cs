@@ -2,6 +2,9 @@
 
 using Domain.Entities;
 using Domain.Interfaces;
+using AutoMapper;
+using Application.Dtos;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 
@@ -11,7 +14,9 @@ namespace Api.Controllers;
 /// <param name="bookRepository">Repository for accessing book data.</param>
 [ApiController]
 [Route("api/books")]
-public class BookController(IBookRepository bookRepository) : Controller
+public class BookController(
+    IBookRepository bookRepository, 
+    IMapper mapper) : Controller
 {
     /// <summary>
     /// Get all books.
@@ -20,7 +25,8 @@ public class BookController(IBookRepository bookRepository) : Controller
     public async Task<IActionResult> GetAllBooks()
     {
         var books = await bookRepository.GetAllAsync();
-        return Ok(books);
+        var booksDto = mapper.Map<List<BookDto>>(books);
+        return Ok(booksDto);
     }
 
     /// <summary>
@@ -33,7 +39,8 @@ public class BookController(IBookRepository bookRepository) : Controller
         var book = await bookRepository.GetByIdAsync(id);
         if (book == null) return NotFound();
 
-        return Ok(book);
+        var bookDto = mapper.Map<BookDto>(book);
+        return Ok(bookDto);
     }
 
     /// <summary>
@@ -55,10 +62,11 @@ public class BookController(IBookRepository bookRepository) : Controller
     /// </summary>
     /// <param name="newBook">The book object to create.</param>
     [HttpPost("")]
-    public async Task<IActionResult> CreateBook([FromBody] Book newBook)
+    public async Task<IActionResult> CreateBook([FromBody] BookDto newBookDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
+        var newBook = mapper.Map<Book>(newBookDto);
         await bookRepository.AddAsync(newBook);
         return CreatedAtAction(nameof(GetBookById), new { id = newBook.Id }, newBook);
     }
@@ -69,15 +77,16 @@ public class BookController(IBookRepository bookRepository) : Controller
     /// <param name="id">The ID of the book to update.</param>
     /// <param name="updated">The updated book object.</param>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateBook(int id, [FromBody] Book updated)
+    public async Task<IActionResult> UpdateBook(int id, [FromBody] BookDto updatedBookDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         var book = await bookRepository.GetByIdAsync(id);
         if (book == null) return NotFound();
 
-        updated.Id = book.Id;
-        await bookRepository.UpdateAsync(updated);
+        var updatedBook = mapper.Map<Book>(updatedBookDto);
+        updatedBook.Id = book.Id;
+        await bookRepository.UpdateAsync(updatedBook);
         return NoContent();
     }
 }

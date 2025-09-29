@@ -2,6 +2,9 @@
 
 using Domain.Entities;
 using Domain.Interfaces;
+using AutoMapper;
+using Application.Dtos;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 
@@ -16,7 +19,8 @@ namespace Api.Controllers;
 public class BorrowRecordController(
     IBorrowRecordRepository borrowRecordRepository,
     IBookRepository bookRepository,
-    ICustomerRepository customerRepository) : Controller
+    ICustomerRepository customerRepository,
+    IMapper mapper) : Controller
 {
     /// <summary>
     /// Get all borrow records.
@@ -25,7 +29,8 @@ public class BorrowRecordController(
     public async Task<IActionResult> GetAllRecords()
     {
         var records = await borrowRecordRepository.GetAllAsync();
-        return Ok(records);
+        var recordsDto = mapper.Map<List<BorrowRecordDto>>(records);
+        return Ok(recordsDto);
     }
 
     /// <summary>
@@ -44,7 +49,8 @@ public class BorrowRecordController(
         if (book == null || customer == null)
             return Conflict("Book or Customer not found");
 
-        return Ok(record);
+        var recordDto = mapper.Map<BorrowRecordDto>(record);
+        return Ok(recordDto);
     }
 
     /// <summary>
@@ -66,15 +72,16 @@ public class BorrowRecordController(
     /// </summary>
     /// <param name="newRecord">The borrow record object to create.</param>
     [HttpPost("")]
-    public async Task<IActionResult> CreateRecord([FromBody] BorrowRecord newRecord)
+    public async Task<IActionResult> CreateRecord([FromBody] BorrowRecordDto newRecordDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var isBookExists = await bookRepository.ExistsById(newRecord.BookId);
-        var isCustomerExists = await customerRepository.ExistsById(newRecord.CustomerId);
+        var isBookExists = await bookRepository.ExistsById(newRecordDto.BookId);
+        var isCustomerExists = await customerRepository.ExistsById(newRecordDto.CustomerId);
 
         if (!isBookExists || !isCustomerExists) return NotFound();
 
+        var newRecord = mapper.Map<BorrowRecord>(newRecordDto);
         await borrowRecordRepository.AddAsync(newRecord);
         return CreatedAtAction(nameof(GetRecordById), new { id = newRecord.Id }, newRecord);
     }
@@ -85,20 +92,21 @@ public class BorrowRecordController(
     /// <param name="id">The ID of the record to update.</param>
     /// <param name="updated">The updated record object.</param>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecord updated)
+    public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecordDto updatedRecordDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var isBookExists = await bookRepository.ExistsById(updated.BookId);
-        var isCustomerExists = await customerRepository.ExistsById(updated.CustomerId);
+        var isBookExists = await bookRepository.ExistsById(updatedRecordDto.BookId);
+        var isCustomerExists = await customerRepository.ExistsById(updatedRecordDto.CustomerId);
 
         if (!isBookExists || !isCustomerExists) return NotFound();
 
         var record = await borrowRecordRepository.GetByIdAsync(id);
         if (record == null) return NotFound();
 
-        updated.Id = record.Id;
-        await borrowRecordRepository.UpdateAsync(updated);
+        var updatedRecord = mapper.Map<BorrowRecord>(updatedRecordDto);
+        updatedRecord.Id = record.Id;
+        await borrowRecordRepository.UpdateAsync(updatedRecord);
         return NoContent();
     }
 }
