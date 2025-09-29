@@ -3,7 +3,7 @@
 namespace Application.Dtos;
 
 /// <summary>
-/// Represents a dto for a book in the library.
+/// Represents a dto for a book in the library with additional information.
 /// </summary>
 public class BookDto
 {
@@ -42,5 +42,8 @@ public class BookDto
     /// </summary>
     public required int PublicationYear { get; set; }
 
+    /// <summary>
+    /// Additional information about borrow records with this book.
+    /// </summary>
     public int? BorrowCount { get; set; }
 }

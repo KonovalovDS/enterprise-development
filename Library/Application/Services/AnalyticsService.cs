@@ -1,7 +1,6 @@
-﻿using Application.Dtos;
-using AutoMapper;
-using Domain.Entities;
-using Domain.Enums;
+﻿using AutoMapper;
+
+using Application.Dtos;
 using Domain.Interfaces;
 
 namespace Application.Services;
@@ -12,16 +11,18 @@ namespace Application.Services;
 /// <param name="borrowRecordRepository">Repository for accessing borrow records.</param>
 /// <param name="bookRepository">Repository for accessing books.</param>
 /// <param name="customerRepository">Repository for accessing customers.</param>
+/// <param name="mapper">Mapper for dtos and entities.</param>
 public class AnalyticsService(
     IBorrowRecordRepository borrowRecordRepository,
     IBookRepository bookRepository,
     ICustomerRepository customerRepository,
-    IMapper mapper)
+    IMapper mapper
+)
 {
     /// <summary>
-    /// Returns all borrowed books and sorts them by name.
+    /// Returns all books borrowed on a specific date, sorted alphabetically by title.
     /// </summary>
-    /// <returns>The result contains a list of borrowed <see cref="Book"/> objects.</returns>
+    /// <param name="date">The specific date for filtering borrowed books.</param>
     public async Task<List<BookDto>> GetAllBorrowedBooksByDateSortedAsync(DateOnly date)
     {
         var records = await borrowRecordRepository.GetAllAsync();
@@ -42,11 +43,10 @@ public class AnalyticsService(
     }
 
     /// <summary>
-    /// Returns the top five customers with the most borrows within a specified period.
+    /// Returns the top five customers with the most borrows within a specified date range.
     /// </summary>
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
-    /// <returns>The result contains a list of the top five <see cref="Customer"/> objects.</returns>
     public async Task<List<CustomerDto>> GetTopFiveCustomersAsync(DateOnly start, DateOnly end)
     {
         var records = await borrowRecordRepository.GetAllAsync();
@@ -69,14 +69,12 @@ public class AnalyticsService(
         {
             resultDto[i].BorrowCount = topFiveCustomersWithCount[i].BorrowCount;
         }
-
         return resultDto;
     }
 
     /// <summary>
     /// Returns customers who have borrowed books for the longest duration.
     /// </summary>
-    /// <returns>The result contains a list of <see cref="Customer"/> objects with the longest borrow durations.</returns>
     public async Task<List<CustomerDto>> GetCustomersWithLongestBorrowsAsync()
     {
         var records = await borrowRecordRepository.GetAllAsync();
@@ -109,7 +107,6 @@ public class AnalyticsService(
     /// </summary>
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
-    /// <returns>The result contains a list of top five <see cref="Publisher"/> values.</returns>
     public async Task<List<string>> GetTopFivePublishersByDateAsync(DateOnly start, DateOnly end)
     {
         var records = await borrowRecordRepository.GetAllAsync();
@@ -130,7 +127,6 @@ public class AnalyticsService(
     /// <summary>
     /// Returns the top five least popular books based on borrow count.
     /// </summary>
-    /// <returns>The result contains a list of the least popular <see cref="Book"/> objects.</returns>
     public async Task<List<BookDto>> GetTopFiveLeastPopularBooksAsync()
     {
         var records = await borrowRecordRepository.GetAllAsync();
@@ -152,7 +148,6 @@ public class AnalyticsService(
         {
             resultDto[i].BorrowCount = topFiveBooksWithCount[i].BorrowCount;
         }
-
         return resultDto;
     }
 }

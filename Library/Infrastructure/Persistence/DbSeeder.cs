@@ -1,10 +1,20 @@
-﻿using Domain.DataSeeders;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+
+using Domain.DataSeeders;
 
 namespace Infrastructure.Persistence;
 
+/// <summary>
+/// Provides helper methods to seed the database with initial test data for customers, books, and borrow records.
+/// Ensures that the primary key sequences are correctly set after inserting data.
+/// </summary>
 public static class DbSeeder
 {
+    /// <summary>
+    /// Seeds the <see cref="Customer"/> table with initial test data if it is empty.
+    /// After inserting, updates the primary key sequence to match the maximum existing ID.
+    /// </summary>
+    /// <param name="context">The database context used to access the Customers table.</param>
     public static async Task SeedCustomersAsync(AppDbContext context)
     {
         if (!context.Customers.Any())
@@ -17,6 +27,11 @@ public static class DbSeeder
         );
     }
 
+    /// <summary>
+    /// Seeds the <see cref="Book"/> table with initial test data if it is empty.
+    /// After inserting, updates the primary key sequence to match the maximum existing ID.
+    /// </summary>
+    /// <param name="context">The database context used to access the Books table.</param>
     public static async Task SeedBooksAsync(AppDbContext context) 
     { 
         if (!context.Books.Any()) 
@@ -29,6 +44,11 @@ public static class DbSeeder
         );
     }
 
+    /// <summary>
+    /// Seeds the <see cref="BorrowRecord"/> table with initial test data if it is empty.
+    /// After inserting, updates the primary key sequence to match the maximum existing ID.
+    /// </summary>
+    /// <param name="context">The database context used to access the BorrowRecords table.</param>
     public static async Task SeedBorrowRecordsAsync(AppDbContext context) 
     { 
         if (!context.BorrowRecords.Any()) 

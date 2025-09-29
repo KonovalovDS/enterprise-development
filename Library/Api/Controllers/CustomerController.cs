@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 
+using Application.Dtos;
 using Domain.Entities;
 using Domain.Interfaces;
-using AutoMapper;
-using Application.Dtos;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 
@@ -12,14 +11,16 @@ namespace Api.Controllers;
 /// Endpoints for managing customers.
 /// </summary>
 /// <param name="customerRepository">Repository for accessing customer data.</param>
+/// <param name="mapper">Mapper for dtos and entities.</param>
 [ApiController]
 [Route("api/customers")]
 public class CustomerController(
     ICustomerRepository customerRepository, 
-    IMapper mapper) : Controller
+    IMapper mapper
+) : ControllerBase
 {
     /// <summary>
-    /// Get all customers.
+    /// Returns all customers.
     /// </summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllCustomers()
@@ -30,9 +31,9 @@ public class CustomerController(
     }
 
     /// <summary>
-    /// Get a customer by ID.
+    /// Returns a customer by their unique ID.
     /// </summary>
-    /// <param name="id">The ID of the customer to get.</param>
+    /// <param name="id">The ID of the customer to return.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetCustomerById(int id)
     {
@@ -44,7 +45,7 @@ public class CustomerController(
     }
 
     /// <summary>
-    /// Delete a customer by ID.
+    /// Deletes a customer by their unique ID.
     /// </summary>
     /// <param name="id">The ID of the customer to delete.</param>
     [HttpDelete("{id:int}")]
@@ -58,9 +59,9 @@ public class CustomerController(
     }
 
     /// <summary>
-    /// Create a new customer.
+    /// Creates a new customer.
     /// </summary>
-    /// <param name="newCustomer">The customer object to create.</param>
+    /// <param name="newCustomerDto">The data of the customer to create.</param>
     [HttpPost("")]
     public async Task<IActionResult> CreateCustomer([FromBody] CustomerDto newCustomerDto)
     {
@@ -72,10 +73,10 @@ public class CustomerController(
     }
 
     /// <summary>
-    /// Update an existing customer by ID.
+    /// Updates an existing customer by their unique ID.
     /// </summary>
     /// <param name="id">The ID of the customer to update.</param>
-    /// <param name="updated">The updated customer object.</param>
+    /// <param name="updatedCustomerDto">The updated customer data.</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerDto updatedCustomerDto)
     {

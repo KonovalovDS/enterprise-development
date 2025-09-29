@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Application.Dtos;
 
-namespace Application.Dtos;
 /// <summary>
-/// Represents a dto for a customer with personal details and registration date.
+/// Represents a dto for a customer with additional information.
 /// </summary>
 public class CustomerDto
 {
@@ -31,5 +26,8 @@ public class CustomerDto
     /// </summary>
     public required DateOnly RegisterDate { get; set; }
 
+    /// <summary>
+    /// Additional information Customer borrowed books count.
+    /// </summary>
     public int? BorrowCount { get; set; }
 }

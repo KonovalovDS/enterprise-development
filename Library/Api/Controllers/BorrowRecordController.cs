@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 
+using Application.Dtos;
 using Domain.Entities;
 using Domain.Interfaces;
-using AutoMapper;
-using Application.Dtos;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 
@@ -14,16 +13,18 @@ namespace Api.Controllers;
 /// <param name="borrowRecordRepository">Repository for accessing borrow records.</param>
 /// <param name="bookRepository">Repository for accessing books.</param>
 /// <param name="customerRepository">Repository for accessing customers.</param>
+/// <param name="mapper">Mapper for dtos and entities.</param>
 [ApiController]
 [Route("api/records")]
 public class BorrowRecordController(
     IBorrowRecordRepository borrowRecordRepository,
     IBookRepository bookRepository,
     ICustomerRepository customerRepository,
-    IMapper mapper) : Controller
+    IMapper mapper
+) : ControllerBase
 {
     /// <summary>
-    /// Get all borrow records.
+    /// Returns all borrow records.
     /// </summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllRecords()
@@ -34,9 +35,9 @@ public class BorrowRecordController(
     }
 
     /// <summary>
-    /// Get a borrow record by ID.
+    /// Returns a borrow record by its unique ID.
     /// </summary>
-    /// <param name="id">The ID of the record to get.</param>
+    /// <param name="id">The ID of the borrow record to return.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetRecordById(int id)
     {
@@ -54,9 +55,9 @@ public class BorrowRecordController(
     }
 
     /// <summary>
-    /// Delete a borrow record by ID.
-    /// summary>
-    /// <param name="id">The ID of the record to delete.</param>
+    /// Deletes a borrow record by its unique ID.
+    /// </summary>
+    /// <param name="id">The ID of the borrow record to delete.</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteRecordById(int id)
     {
@@ -68,9 +69,9 @@ public class BorrowRecordController(
     }
 
     /// <summary>
-    /// Create a new borrow record.
+    /// Creates a new borrow record.
     /// </summary>
-    /// <param name="newRecord">The borrow record object to create.</param>
+    /// <param name="newRecordDto">The data for the new borrow record.</param>
     [HttpPost("")]
     public async Task<IActionResult> CreateRecord([FromBody] BorrowRecordDto newRecordDto)
     {
@@ -87,10 +88,10 @@ public class BorrowRecordController(
     }
 
     /// <summary>
-    /// Create a new borrow record.
+    /// Updates an existing borrow record by its unique ID.
     /// </summary>
-    /// <param name="id">The ID of the record to update.</param>
-    /// <param name="updated">The updated record object.</param>
+    /// <param name="id">The ID of the borrow record to update.</param>
+    /// <param name="updatedRecordDto">The updated borrow record data.</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecordDto updatedRecordDto)
     {

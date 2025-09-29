@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 
+using Application.Dtos;
 using Domain.Entities;
 using Domain.Interfaces;
-using AutoMapper;
-using Application.Dtos;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 
@@ -12,14 +11,16 @@ namespace Api.Controllers;
 /// Endpoints for managing books.
 /// </summary>
 /// <param name="bookRepository">Repository for accessing book data.</param>
+/// <param name="mapper">Mapper for dtos and entities.</param>
 [ApiController]
 [Route("api/books")]
 public class BookController(
     IBookRepository bookRepository, 
-    IMapper mapper) : Controller
+    IMapper mapper
+) : ControllerBase
 {
     /// <summary>
-    /// Get all books.
+    /// Returns all books in the system.
     /// </summary>
     [HttpGet("")]
     public async Task<IActionResult> GetAllBooks()
@@ -30,9 +31,9 @@ public class BookController(
     }
 
     /// <summary>
-    /// Get a book by its ID.
+    /// Returns a book by its unique ID.
     /// </summary>
-    /// <param name="id">The ID of the book to get.</param>
+    /// <param name="id">The ID of the book to return.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetBookById(int id)
     {
@@ -44,7 +45,7 @@ public class BookController(
     }
 
     /// <summary>
-    /// Delete a book by its ID.
+    /// Deletes a book by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the book to delete.</param>
     [HttpDelete("{id:int}")]
@@ -58,9 +59,9 @@ public class BookController(
     }
 
     /// <summary>
-    /// Create a new book.
+    /// Creates a new book.
     /// </summary>
-    /// <param name="newBook">The book object to create.</param>
+    /// <param name="newBookDto">The data of the book to create.</param>
     [HttpPost("")]
     public async Task<IActionResult> CreateBook([FromBody] BookDto newBookDto)
     {
@@ -72,10 +73,10 @@ public class BookController(
     }
 
     /// <summary>
-    /// Update an existing book by ID.
+    /// Updates an existing book by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the book to update.</param>
-    /// <param name="updated">The updated book object.</param>
+    /// <param name="updatedBookDto">The updated book data.</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateBook(int id, [FromBody] BookDto updatedBookDto)
     {

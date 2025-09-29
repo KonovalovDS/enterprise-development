@@ -1,8 +1,6 @@
-﻿using Application.Dtos;
+﻿using Microsoft.AspNetCore.Mvc;
+
 using Application.Services;
-using AutoMapper;
-using Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
@@ -12,11 +10,12 @@ namespace Api.Controllers;
 /// <param name="analyticsService">Service that provides analytics operations.</param>
 [ApiController]
 [Route("api/analytics")]
-public class AnalyticsController(AnalyticsService analyticsService) : Controller
+public class AnalyticsController(AnalyticsService analyticsService) : ControllerBase
 {
     /// <summary>
-    /// All borrowed books sorted by name.
+    /// Returns all books borrowed on a specific date, sorted by their title.
     /// </summary>
+    /// <param name="date">The date for which borrowed books are requested.</param>
     [HttpGet("borrowed-books")]
     public async Task<IActionResult> GetAllBorrowedBooksSorted([FromQuery] DateOnly date)
     {
@@ -24,8 +23,8 @@ public class AnalyticsController(AnalyticsService analyticsService) : Controller
         return Ok(result);
     }
 
-    /// <summary>
-    /// Top five customers in a given period.
+    // <summary>
+    /// Returns the top five customers based on borrow count within a specified date range.
     /// </summary>
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
@@ -37,7 +36,7 @@ public class AnalyticsController(AnalyticsService analyticsService) : Controller
     }
 
     /// <summary>
-    /// Customers with longest borrows.
+    /// Returns customers with the longest borrowing duration across all records.
     /// </summary>
     [HttpGet("longest-borrows")]
     public async Task<IActionResult> GetCustomersWithLongestBorrows()
@@ -47,7 +46,7 @@ public class AnalyticsController(AnalyticsService analyticsService) : Controller
     }
 
     /// <summary>
-    /// Top five publishers in a given period.
+    /// Returns the top five publishers with the highest book borrow count within a specified period.
     /// </summary>
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
@@ -59,7 +58,7 @@ public class AnalyticsController(AnalyticsService analyticsService) : Controller
     }
 
     /// <summary>
-    /// Top five least popular books.
+    /// Returns the top five least popular books based on borrow frequency.
     /// </summary>
     [HttpGet("least-popular-books")]
     public async Task<IActionResult> GetTopFiveLeastPopularBooks()

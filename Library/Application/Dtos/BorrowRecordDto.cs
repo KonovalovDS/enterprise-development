@@ -25,7 +25,13 @@ public class BorrowRecordDto
     /// </summary>
     public required int BorrowDuration { get; set; }
 
+    /// <summary>
+    /// Additional information with Book Title.
+    /// </summary>
     public string? BookTitle { get; set; }
 
+    /// <summary>
+    /// Additional information with Customer Name.
+    /// </summary>
     public string? CustomerName { get; set; }
 }
