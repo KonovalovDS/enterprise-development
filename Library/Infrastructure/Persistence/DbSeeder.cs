@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using Domain.DataSeeders;
 
 namespace Infrastructure.Persistence;

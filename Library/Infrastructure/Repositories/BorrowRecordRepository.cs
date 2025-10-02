@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
@@ -41,8 +40,6 @@ public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordReposit
     /// <param name="record">Record to add.</param>
     public async Task AddAsync(BorrowRecord record) 
     {
-        if (record == null) throw new ArgumentNullException(nameof(record));
-
         await context.BorrowRecords.AddAsync(record);
         await context.SaveChangesAsync();
     }
@@ -53,7 +50,6 @@ public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordReposit
     /// <param name="record">Record with updated data.</param>
     public async Task UpdateAsync(BorrowRecord record) 
     {
-        if (record == null) throw new ArgumentNullException(nameof(record));
         var existingRecord = await context.BorrowRecords.FindAsync(record.Id);
         if (existingRecord == null)
             throw new KeyNotFoundException($"Record with Id {record.Id} not found.");

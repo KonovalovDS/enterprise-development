@@ -1,10 +1,15 @@
-﻿namespace Application.Dtos;
+﻿namespace Application.Dtos.CustomerDtos;
 
 /// <summary>
-/// Represents a dto for a customer with additional information.
+/// Represents a dto for a customer.
 /// </summary>
-public class CustomerDto
+public class CustomerGetDto
 {
+    /// <summary>
+    /// Unique identifier of the customer.
+    /// </summary>
+    public required int Id { get; set; }
+
     /// <summary>
     /// Full name of the customer.
     /// </summary>
@@ -25,9 +30,4 @@ public class CustomerDto
     /// Defaults to the current date.
     /// </summary>
     public required DateOnly RegisterDate { get; set; }
-
-    /// <summary>
-    /// Additional information Customer borrowed books count.
-    /// </summary>
-    public int? BorrowCount { get; set; }
 }

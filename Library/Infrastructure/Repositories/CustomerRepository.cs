@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
@@ -41,8 +40,6 @@ public class CustomerRepository(AppDbContext context) : ICustomerRepository
     /// <param name="customer">Customer to add.</param>
     public async Task AddAsync(Customer customer) 
     {
-        if (customer == null) throw new ArgumentNullException(nameof(customer));
-
         await context.Customers.AddAsync(customer);
         await context.SaveChangesAsync();
     }
@@ -53,7 +50,6 @@ public class CustomerRepository(AppDbContext context) : ICustomerRepository
     /// <param name="customer">Customer with updated data.</param>
     public async Task UpdateAsync(Customer customer) 
     {
-        if (customer == null) throw new ArgumentNullException(nameof(customer));
         var existingCustomer = await context.Customers.FindAsync(customer.Id);
         if (existingCustomer == null)
             throw new KeyNotFoundException($"Customer with Id {customer.Id} not found.");

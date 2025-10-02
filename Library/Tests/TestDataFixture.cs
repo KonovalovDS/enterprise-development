@@ -1,5 +1,5 @@
-﻿using Domain.Entities;
-using Domain.DataSeeders;
+﻿using Domain.DataSeeders;
+using Domain.Entities;
 
 namespace Tests;
 
@@ -7,7 +7,7 @@ namespace Tests;
 /// Test data fixture for the library.
 /// Provides collections of books, customers and borrow records.
 /// </summary>
-public class TestDataFixture 
+public class TestDataFixture
 {
     /// <summary>
     /// List of books for testing.

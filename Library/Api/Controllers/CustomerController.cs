@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-
-using Application.Dtos;
+using Application.Dtos.CustomerDtos;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -15,18 +14,18 @@ namespace Api.Controllers;
 [ApiController]
 [Route("api/customers")]
 public class CustomerController(
-    ICustomerRepository customerRepository, 
+    ICustomerRepository customerRepository,
     IMapper mapper
 ) : ControllerBase
 {
     /// <summary>
     /// Returns all customers.
     /// </summary>
-    [HttpGet("")]
-    public async Task<IActionResult> GetAllCustomers()
+    [HttpGet]
+    public async Task<ActionResult<List<CustomerGetDto>>> GetAllCustomers()
     {
         var customers = await customerRepository.GetAllAsync();
-        var customersDto = mapper.Map<List<CustomerDto>>(customers);
+        var customersDto = mapper.Map<List<CustomerGetDto>>(customers);
         return Ok(customersDto);
     }
 
@@ -35,12 +34,12 @@ public class CustomerController(
     /// </summary>
     /// <param name="id">The ID of the customer to return.</param>
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetCustomerById(int id)
+    public async Task<ActionResult<CustomerGetDto>> GetCustomerById(int id)
     {
         var customer = await customerRepository.GetByIdAsync(id);
         if (customer == null) return NotFound();
 
-        var customerDto = mapper.Map<CustomerDto>(customer);
+        var customerDto = mapper.Map<CustomerGetDto>(customer);
         return Ok(customerDto);
     }
 
@@ -49,7 +48,7 @@ public class CustomerController(
     /// </summary>
     /// <param name="id">The ID of the customer to delete.</param>
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteCustomerById(int id)
+    public async Task<ActionResult> DeleteCustomerById(int id)
     {
         var isExists = await customerRepository.ExistsById(id);
         if (!isExists) return NotFound();
@@ -62,14 +61,16 @@ public class CustomerController(
     /// Creates a new customer.
     /// </summary>
     /// <param name="newCustomerDto">The data of the customer to create.</param>
-    [HttpPost("")]
-    public async Task<IActionResult> CreateCustomer([FromBody] CustomerDto newCustomerDto)
+    [HttpPost]
+    public async Task<ActionResult<CustomerGetDto>> CreateCustomer([FromBody] CustomerEditDto newCustomerDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         var newCustomer = mapper.Map<Customer>(newCustomerDto);
         await customerRepository.AddAsync(newCustomer);
-        return CreatedAtAction(nameof(GetCustomerById), new { id = newCustomer.Id }, newCustomer);
+
+        var resultDto = mapper.Map<CustomerGetDto>(newCustomer);
+        return CreatedAtAction(nameof(GetCustomerById), new { id = newCustomer.Id }, resultDto);
     }
 
     /// <summary>
@@ -78,7 +79,7 @@ public class CustomerController(
     /// <param name="id">The ID of the customer to update.</param>
     /// <param name="updatedCustomerDto">The updated customer data.</param>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerDto updatedCustomerDto)
+    public async Task<ActionResult> UpdateCustomer(int id, [FromBody] CustomerEditDto updatedCustomerDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 

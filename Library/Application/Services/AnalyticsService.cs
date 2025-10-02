@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-
-using Application.Dtos;
+﻿using Application.Dtos.AnalyticsDtos;
 using Domain.Interfaces;
 
 namespace Application.Services;
@@ -11,35 +9,38 @@ namespace Application.Services;
 /// <param name="borrowRecordRepository">Repository for accessing borrow records.</param>
 /// <param name="bookRepository">Repository for accessing books.</param>
 /// <param name="customerRepository">Repository for accessing customers.</param>
-/// <param name="mapper">Mapper for dtos and entities.</param>
 public class AnalyticsService(
     IBorrowRecordRepository borrowRecordRepository,
     IBookRepository bookRepository,
-    ICustomerRepository customerRepository,
-    IMapper mapper
+    ICustomerRepository customerRepository
 )
 {
     /// <summary>
     /// Returns all books borrowed on a specific date, sorted alphabetically by title.
     /// </summary>
     /// <param name="date">The specific date for filtering borrowed books.</param>
-    public async Task<List<BookDto>> GetAllBorrowedBooksByDateSortedAsync(DateOnly date)
+    public async Task<List<BookWithBorrowCountDto>> GetAllBorrowedBooksByDateSortedAsync(DateOnly date)
     {
         var records = await borrowRecordRepository.GetAllAsync();
         var books = await bookRepository.GetAllAsync();
 
         var allBorrowedBooks = records
             .Where(r => r.BorrowDate <= date && r.BorrowDate.AddDays(r.BorrowDuration) >= date)
+            .GroupBy(r => r.BookId)
             .Join(books,
-                  r => r.BookId,
-                  b => b.Id,
-                  (r, b) => b)
-            .Distinct()
+                r => r.Key,
+                b => b.Id,
+                (r, b) => new BookWithBorrowCountDto
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Count = r.Count()
+                })
             .OrderBy(b => b.Title)
             .ToList();
 
-        var resultDto = mapper.Map<List<BookDto>>(allBorrowedBooks);
-        return resultDto;
+        return allBorrowedBooks;
     }
 
     /// <summary>
@@ -47,7 +48,7 @@ public class AnalyticsService(
     /// </summary>
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
-    public async Task<List<CustomerDto>> GetTopFiveCustomersAsync(DateOnly start, DateOnly end)
+    public async Task<List<CustomerWithBorrowCountDto>> GetTopFiveCustomersAsync(DateOnly start, DateOnly end)
     {
         var records = await borrowRecordRepository.GetAllAsync();
         var customers = await customerRepository.GetAllAsync();
@@ -55,59 +56,57 @@ public class AnalyticsService(
         var topFiveCustomersWithCount = records
             .Where(r => r.BorrowDate >= start && r.BorrowDate.AddDays(r.BorrowDuration) <= end)
             .GroupBy(r => r.CustomerId)
-            .Select(g => new
+            .Select(x => new CustomerWithBorrowCountDto
             {
-                Customer = customers.First(c => c.Id == g.Key),
-                BorrowCount = g.Count()
+                Id = x.Key,
+                Name = customers.First(c => c.Id == x.Key).Name,
+                Count = x.Count()
             })
-            .OrderByDescending(x => x.BorrowCount)
+            .OrderByDescending(x => x.Count)
+            .ThenBy(x => x.Name)
             .Take(5)
             .ToList();
 
-        var resultDto = mapper.Map<List<CustomerDto>>(topFiveCustomersWithCount.Select(x => x.Customer));
-        for (var i = 0; i < resultDto.Count; i++)
-        {
-            resultDto[i].BorrowCount = topFiveCustomersWithCount[i].BorrowCount;
-        }
-        return resultDto;
+        return topFiveCustomersWithCount;
     }
 
     /// <summary>
     /// Returns customers who have borrowed books for the longest duration.
     /// </summary>
-    public async Task<List<CustomerDto>> GetCustomersWithLongestBorrowsAsync()
+    public async Task<List<CustomerWithDurationDto>> GetCustomersWithLongestBorrowsAsync()
     {
         var records = await borrowRecordRepository.GetAllAsync();
         var customers = await customerRepository.GetAllAsync();
 
         var customersWithMaxDuration = records
             .GroupBy(r => r.CustomerId)
-            .Select(x => new
+            .Select(x => new CustomerWithDurationDto
             {
-                Customer = customers.First(c => c.Id == x.Key),
-                MaxDuration = x.Max(r => r.BorrowDuration)
+                Id = x.Key,
+                Name = customers.First(c => c.Id == x.Key).Name,
+                Duration = x.Max(r => r.BorrowDuration)
             })
-            .OrderByDescending(x => x.MaxDuration)
             .ToList();
 
-        var maxDuration = customersWithMaxDuration.Max(x => x.MaxDuration);
+        if (!customersWithMaxDuration.Any())
+            return new List<CustomerWithDurationDto>();
+
+        var maxDuration = customersWithMaxDuration.Max(x => x.Duration);
 
         var topCustomers = customersWithMaxDuration
-            .Where(x => x.MaxDuration == maxDuration)
-            .Select(x => x.Customer)
+            .Where(x => x.Duration == maxDuration)
             .OrderBy(c => c.Name)
             .ToList();
 
-        var resultDto = mapper.Map<List<CustomerDto>>(topCustomers);
-        return resultDto;
+        return topCustomers;
     }
 
     /// <summary>
-    /// Returns the top five publishers based on book borrows within a specified period.
+    /// Returns the top five publishers with borrowed books count within a specified period.
     /// </summary>
     /// <param name="start">Start date of the period.</param>
     /// <param name="end">End date of the period.</param>
-    public async Task<List<string>> GetTopFivePublishersByDateAsync(DateOnly start, DateOnly end)
+    public async Task<List<PublisherDto>> GetTopFivePublishersByDateAsync(DateOnly start, DateOnly end)
     {
         var records = await borrowRecordRepository.GetAllAsync();
         var books = await bookRepository.GetAllAsync();
@@ -118,36 +117,43 @@ public class AnalyticsService(
             .GroupBy(p => p)
             .OrderByDescending(g => g.Count())
             .Take(5)
-            .Select(g => g.Key.ToString())
+            .Select(g => new PublisherDto
+            {
+                Publisher = g.Key.ToString(),
+                Count = g.Count()
+            })
             .ToList();
 
         return topFivePublishers;
     }
 
     /// <summary>
-    /// Returns the top five least popular books based on borrow count.
+    /// Returns the top five least popular books based on borrow count within the specified period.
     /// </summary>
-    public async Task<List<BookDto>> GetTopFiveLeastPopularBooksAsync()
+    /// <param name="start">Start date of the period.</param>
+    /// <param name="end">End date of the period.</param>
+    public async Task<List<BookWithBorrowCountDto>> GetTopFiveLeastPopularBooksAsync(DateOnly start, DateOnly end)
     {
         var records = await borrowRecordRepository.GetAllAsync();
         var books = await bookRepository.GetAllAsync();
 
-        var topFiveBooksWithCount = books
-        .Select(b => new
-        {
-            Book = b,
-            BorrowCount = records.Count(r => r.BookId == b.Id)
-        })
-        .OrderBy(x => x.BorrowCount)
-        .ThenBy(x => x.Book.Title)
-        .Take(5)
-        .ToList();
+        var recordsInPeriod = records
+            .Where(r => r.BorrowDate >= start && r.BorrowDate.AddDays(r.BorrowDuration) <= end)
+            .ToList();
 
-        var resultDto = mapper.Map<List<BookDto>>(topFiveBooksWithCount.Select(x => x.Book));
-        for (var i = 0; i < resultDto.Count; i++)
-        {
-            resultDto[i].BorrowCount = topFiveBooksWithCount[i].BorrowCount;
-        }
-        return resultDto;
+        var topFiveBooksWithCount = books
+            .Select(b => new BookWithBorrowCountDto
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Author = b.Author,
+                Count = recordsInPeriod.Count(r => r.BookId == b.Id)
+            })
+            .OrderBy(x => x.Count)
+            .ThenBy(x => x.Title)
+            .Take(5)
+            .ToList();
+
+        return topFiveBooksWithCount;
     }
 }

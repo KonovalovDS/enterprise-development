@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
@@ -41,7 +40,6 @@ public class BookRepository(AppDbContext context) : IBookRepository
     /// <param name="book">Book to add.</param>
     public async Task AddAsync(Book book) 
     {
-        if (book == null) throw new ArgumentNullException(nameof(book));
         await context.Books.AddAsync(book);
         await context.SaveChangesAsync();
     }
@@ -52,7 +50,6 @@ public class BookRepository(AppDbContext context) : IBookRepository
     /// <param name="book">Book with updated data.</param>
     public async Task UpdateAsync(Book book) 
     {
-        if (book == null) throw new ArgumentNullException(nameof(book));
         var existingBook = await context.Books.FindAsync(book.Id);
         if (existingBook == null)
             throw new KeyNotFoundException($"Book with Id {book.Id} not found.");

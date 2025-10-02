@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-
-using Application.Dtos;
+using Application.Dtos.BookDtos;
+using Application.Dtos.BorrowRecordDtos;
+using Application.Dtos.CustomerDtos;
 using Domain.Entities;
 
 namespace Application.Mappers;
@@ -15,13 +16,13 @@ public class AppMappingProfile : Profile
     /// </summary>
     public AppMappingProfile()
     {
-        CreateMap<BookDto, Book>();
-        CreateMap<Book, BookDto>();
+        CreateMap<BookEditDto, Book>().ReverseMap();
+        CreateMap<BookGetDto, Book>().ReverseMap();
 
-        CreateMap<CustomerDto, Customer>();
-        CreateMap<Customer, CustomerDto>();
+        CreateMap<CustomerEditDto, Customer>().ReverseMap();
+        CreateMap<CustomerGetDto, Customer>().ReverseMap();
 
-        CreateMap<BorrowRecordDto, BorrowRecord>();
-        CreateMap<BorrowRecord, BorrowRecordDto>();
+        CreateMap<BorrowRecordEditDto, BorrowRecord>().ReverseMap();
+        CreateMap<BorrowRecordGetDto, BorrowRecord>().ReverseMap();
     }
 }

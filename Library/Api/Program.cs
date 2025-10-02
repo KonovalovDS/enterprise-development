@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-
+using Application.Mappers;
 using Application.Services;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
-using Application.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 

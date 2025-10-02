@@ -4,12 +4,8 @@ var postgres = builder.AddPostgres("postgres");
 
 var postgresDb = postgres.AddDatabase("librarydb");
 
-var pgConnectionString = builder.AddConnectionString(
-    "DefaultConnection",
-    ReferenceExpression.Create($"{postgresDb}"));
-
 var api = builder.AddProject<Projects.Api>("LibraryApi")
-    .WithReference(pgConnectionString)
-    .WaitFor(pgConnectionString);
+    .WithReference(postgresDb, "DefaultConnection")
+    .WaitFor(postgresDb);
 
 builder.Build().Run();

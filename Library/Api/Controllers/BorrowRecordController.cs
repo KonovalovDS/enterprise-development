@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-
-using Application.Dtos;
+using Application.Dtos.BorrowRecordDtos;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -26,11 +25,11 @@ public class BorrowRecordController(
     /// <summary>
     /// Returns all borrow records.
     /// </summary>
-    [HttpGet("")]
-    public async Task<IActionResult> GetAllRecords()
+    [HttpGet]
+    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetAllRecords()
     {
         var records = await borrowRecordRepository.GetAllAsync();
-        var recordsDto = mapper.Map<List<BorrowRecordDto>>(records);
+        var recordsDto = mapper.Map<List<BorrowRecordGetDto>>(records);
         return Ok(recordsDto);
     }
 
@@ -39,7 +38,7 @@ public class BorrowRecordController(
     /// </summary>
     /// <param name="id">The ID of the borrow record to return.</param>
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetRecordById(int id)
+    public async Task<ActionResult<BorrowRecordGetDto>> GetRecordById(int id)
     {
         var record = await borrowRecordRepository.GetByIdAsync(id);
         if (record == null)
@@ -48,9 +47,9 @@ public class BorrowRecordController(
         var book = await bookRepository.GetByIdAsync(record.BookId);
         var customer = await customerRepository.GetByIdAsync(record.CustomerId);
         if (book == null || customer == null)
-            return Conflict("Book or Customer not found");
+            return NotFound("Book or Customer not found");
 
-        var recordDto = mapper.Map<BorrowRecordDto>(record);
+        var recordDto = mapper.Map<BorrowRecordGetDto>(record);
         return Ok(recordDto);
     }
 
@@ -59,7 +58,7 @@ public class BorrowRecordController(
     /// </summary>
     /// <param name="id">The ID of the borrow record to delete.</param>
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteRecordById(int id)
+    public async Task<ActionResult> DeleteRecordById(int id)
     {
         var isExists = await borrowRecordRepository.ExistsById(id);
         if (!isExists) return NotFound();
@@ -72,8 +71,8 @@ public class BorrowRecordController(
     /// Creates a new borrow record.
     /// </summary>
     /// <param name="newRecordDto">The data for the new borrow record.</param>
-    [HttpPost("")]
-    public async Task<IActionResult> CreateRecord([FromBody] BorrowRecordDto newRecordDto)
+    [HttpPost]
+    public async Task<ActionResult<BorrowRecordGetDto>> CreateRecord([FromBody] BorrowRecordEditDto newRecordDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -84,7 +83,9 @@ public class BorrowRecordController(
 
         var newRecord = mapper.Map<BorrowRecord>(newRecordDto);
         await borrowRecordRepository.AddAsync(newRecord);
-        return CreatedAtAction(nameof(GetRecordById), new { id = newRecord.Id }, newRecord);
+
+        var resultDto = mapper.Map<BorrowRecordGetDto>(newRecord);
+        return CreatedAtAction(nameof(GetRecordById), new { id = newRecord.Id }, resultDto);
     }
 
     /// <summary>
@@ -93,7 +94,7 @@ public class BorrowRecordController(
     /// <param name="id">The ID of the borrow record to update.</param>
     /// <param name="updatedRecordDto">The updated borrow record data.</param>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateRecord(int id, [FromBody] BorrowRecordDto updatedRecordDto)
+    public async Task<ActionResult> UpdateRecord(int id, [FromBody] BorrowRecordEditDto updatedRecordDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 

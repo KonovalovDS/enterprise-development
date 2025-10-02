@@ -1,11 +1,11 @@
 ﻿using Domain.Enums;
 
-namespace Application.Dtos;
+namespace Application.Dtos.BookDtos;
 
 /// <summary>
-/// Represents a dto for a book in the library with additional information.
+/// Represents a dto for a book that needed to create or edit.
 /// </summary>
-public class BookDto
+public class BookEditDto
 {
     /// <summary>
     /// Inventory number of the book.
@@ -41,9 +41,4 @@ public class BookDto
     /// Year the book was published.
     /// </summary>
     public required int PublicationYear { get; set; }
-
-    /// <summary>
-    /// Additional information about borrow records with this book.
-    /// </summary>
-    public int? BorrowCount { get; set; }
 }

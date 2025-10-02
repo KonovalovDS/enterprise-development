@@ -1,10 +1,15 @@
-﻿namespace Application.Dtos;
+﻿namespace Application.Dtos.BorrowRecordDtos;
 
 /// <summary>
-/// Represents a dto for a record of a book borrowed by a customer with additional information.
+/// Represents a dto for a borrow record in the library.
 /// </summary>
-public class BorrowRecordDto
+public class BorrowRecordGetDto
 {
+    /// <summary>
+    /// Unique identifier of the borrow record.
+    /// </summary>
+    public required int Id { get; set; }
+
     /// <summary>
     /// Identifier of the borrowed book.
     /// </summary>
@@ -24,14 +29,4 @@ public class BorrowRecordDto
     /// Duration of the borrow in days.
     /// </summary>
     public required int BorrowDuration { get; set; }
-
-    /// <summary>
-    /// Additional information with Book Title.
-    /// </summary>
-    public string? BookTitle { get; set; }
-
-    /// <summary>
-    /// Additional information with Customer Name.
-    /// </summary>
-    public string? CustomerName { get; set; }
 }

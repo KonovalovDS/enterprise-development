@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using Domain.Entities;
 
 namespace Infrastructure.Persistence;
@@ -7,7 +6,8 @@ namespace Infrastructure.Persistence;
 /// <summary>
 /// EF Core database context for the library application.
 /// </summary>
-public class AppDbContext : DbContext 
+/// <param name="options">The options for this context.</param>
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     /// <summary>
     /// DbSet of books in the library.
@@ -23,12 +23,6 @@ public class AppDbContext : DbContext
     /// DbSet of borrow records, representing books borrowed by customers.
     /// </summary>
     public DbSet<BorrowRecord> BorrowRecords { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="AppDbContext"/>.
-    /// </summary>
-    /// <param name="options">The options for this context.</param>
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     /// <summary>
     /// Configures the EF Core model.

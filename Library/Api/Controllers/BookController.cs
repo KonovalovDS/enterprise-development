@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-
-using Application.Dtos;
+using Application.Dtos.BookDtos;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -22,11 +21,11 @@ public class BookController(
     /// <summary>
     /// Returns all books in the system.
     /// </summary>
-    [HttpGet("")]
-    public async Task<IActionResult> GetAllBooks()
+    [HttpGet]
+    public async Task<ActionResult<List<BookGetDto>>> GetAllBooks()
     {
         var books = await bookRepository.GetAllAsync();
-        var booksDto = mapper.Map<List<BookDto>>(books);
+        var booksDto = mapper.Map<List<BookGetDto>>(books);
         return Ok(booksDto);
     }
 
@@ -35,12 +34,12 @@ public class BookController(
     /// </summary>
     /// <param name="id">The ID of the book to return.</param>
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetBookById(int id)
+    public async Task<ActionResult<BookGetDto>> GetBookById(int id)
     {
         var book = await bookRepository.GetByIdAsync(id);
         if (book == null) return NotFound();
 
-        var bookDto = mapper.Map<BookDto>(book);
+        var bookDto = mapper.Map<BookGetDto>(book);
         return Ok(bookDto);
     }
 
@@ -49,7 +48,7 @@ public class BookController(
     /// </summary>
     /// <param name="id">The ID of the book to delete.</param>
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteBookById(int id)
+    public async Task<ActionResult> DeleteBookById(int id)
     {
         var isExists = await bookRepository.ExistsById(id);
         if (!isExists) return NotFound();
@@ -62,14 +61,16 @@ public class BookController(
     /// Creates a new book.
     /// </summary>
     /// <param name="newBookDto">The data of the book to create.</param>
-    [HttpPost("")]
-    public async Task<IActionResult> CreateBook([FromBody] BookDto newBookDto)
+    [HttpPost]
+    public async Task<ActionResult<BookGetDto>> CreateBook([FromBody] BookEditDto newBookDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         var newBook = mapper.Map<Book>(newBookDto);
         await bookRepository.AddAsync(newBook);
-        return CreatedAtAction(nameof(GetBookById), new { id = newBook.Id }, newBook);
+
+        var resultDto = mapper.Map<BookGetDto>(newBook);
+        return CreatedAtAction(nameof(GetBookById), new { id = newBook.Id }, resultDto);
     }
 
     /// <summary>
@@ -78,7 +79,7 @@ public class BookController(
     /// <param name="id">The ID of the book to update.</param>
     /// <param name="updatedBookDto">The updated book data.</param>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateBook(int id, [FromBody] BookDto updatedBookDto)
+    public async Task<ActionResult> UpdateBook(int id, [FromBody] BookEditDto updatedBookDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
