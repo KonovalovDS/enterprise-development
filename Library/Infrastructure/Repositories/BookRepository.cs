@@ -50,11 +50,11 @@ public class BookRepository(AppDbContext context) : IBookRepository
     /// <param name="book">Book with updated data.</param>
     public async Task UpdateAsync(Book book) 
     {
-        var existingBook = await context.Books.FindAsync(book.Id);
-        if (existingBook == null)
+        var existingBook = await context.Books.FindAsync(book.Id) ?? 
             throw new KeyNotFoundException($"Book with Id {book.Id} not found.");
 
         existingBook.Title = book.Title;
+        existingBook.Code = book.Code;
         existingBook.Author = book.Author;
         existingBook.PublicationYear = book.PublicationYear;
         existingBook.Publisher = book.Publisher;
@@ -70,8 +70,7 @@ public class BookRepository(AppDbContext context) : IBookRepository
     /// <param name="id">Book ID.</param>
     public async Task DeleteAsync(int id) 
     {
-        var book = await context.Books.FindAsync(id);
-        if (book == null)
+        var book = await context.Books.FindAsync(id) ??
             throw new KeyNotFoundException($"Book with Id {id} not found.");
 
         context.Books.Remove(book);

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Application.Dtos.AnalyticsDtos;
 using Application.Dtos.BookDtos;
 using Application.Dtos.BorrowRecordDtos;
 using Application.Dtos.CustomerDtos;
@@ -24,5 +25,9 @@ public class AppMappingProfile : Profile
 
         CreateMap<BorrowRecordEditDto, BorrowRecord>().ReverseMap();
         CreateMap<BorrowRecordGetDto, BorrowRecord>().ReverseMap();
+
+        CreateMap<BookWithBorrowCountDto, Book>().ReverseMap();
+        CreateMap<CustomerWithBorrowCountDto, Customer>().ReverseMap();
+        CreateMap<CustomerWithDurationDto, Customer>().ReverseMap();
     }
 }

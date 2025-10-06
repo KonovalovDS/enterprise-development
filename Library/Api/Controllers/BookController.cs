@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.Dtos.BookDtos;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Enums;
 
 namespace Api.Controllers;
 
@@ -66,6 +67,11 @@ public class BookController(
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
+        if (!Enum.TryParse<Publisher>(newBookDto.Publisher, true, out var publisherEnum))
+            return BadRequest($"Invalid publisher: {newBookDto.Publisher}");
+        if (!Enum.TryParse<PublishingType>(newBookDto.PublishingType, true, out var publishingTypeEnum))
+            return BadRequest($"Invalid publishing type: {newBookDto.PublishingType}");
+
         var newBook = mapper.Map<Book>(newBookDto);
         await bookRepository.AddAsync(newBook);
 
@@ -82,6 +88,11 @@ public class BookController(
     public async Task<ActionResult> UpdateBook(int id, [FromBody] BookEditDto updatedBookDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        if (!Enum.TryParse<Publisher>(updatedBookDto.Publisher, true, out var publisherEnum))
+            return BadRequest($"Invalid publisher: {updatedBookDto.Publisher}");
+        if (!Enum.TryParse<PublishingType>(updatedBookDto.PublishingType, true, out var publishingTypeEnum))
+            return BadRequest($"Invalid publishing type: {updatedBookDto.PublishingType}");
 
         var book = await bookRepository.GetByIdAsync(id);
         if (book == null) return NotFound();

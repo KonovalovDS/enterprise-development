@@ -1,4 +1,5 @@
 ﻿using Application.Dtos.AnalyticsDtos;
+using AutoMapper;
 using Domain.Interfaces;
 
 namespace Application.Services;
@@ -9,10 +10,12 @@ namespace Application.Services;
 /// <param name="borrowRecordRepository">Repository for accessing borrow records.</param>
 /// <param name="bookRepository">Repository for accessing books.</param>
 /// <param name="customerRepository">Repository for accessing customers.</param>
+/// <param name="mapper">Mapper for dtos.</param>
 public class AnalyticsService(
     IBorrowRecordRepository borrowRecordRepository,
     IBookRepository bookRepository,
-    ICustomerRepository customerRepository
+    ICustomerRepository customerRepository,
+    IMapper mapper
 )
 {
     /// <summary>
@@ -30,12 +33,11 @@ public class AnalyticsService(
             .Join(books,
                 r => r.Key,
                 b => b.Id,
-                (r, b) => new BookWithBorrowCountDto
+                (r, b) =>
                 {
-                    Id = b.Id,
-                    Title = b.Title,
-                    Author = b.Author,
-                    Count = r.Count()
+                    var dto = mapper.Map<BookWithBorrowCountDto>(b);
+                    dto.Count = r.Count();
+                    return dto;
                 })
             .OrderBy(b => b.Title)
             .ToList();
@@ -56,11 +58,12 @@ public class AnalyticsService(
         var topFiveCustomersWithCount = records
             .Where(r => r.BorrowDate >= start && r.BorrowDate.AddDays(r.BorrowDuration) <= end)
             .GroupBy(r => r.CustomerId)
-            .Select(x => new CustomerWithBorrowCountDto
+            .Select(x =>
             {
-                Id = x.Key,
-                Name = customers.First(c => c.Id == x.Key).Name,
-                Count = x.Count()
+                var customer = customers.First(c => c.Id == x.Key);
+                var dto = mapper.Map<CustomerWithBorrowCountDto>(customer);
+                dto.Count = x.Count();
+                return dto;
             })
             .OrderByDescending(x => x.Count)
             .ThenBy(x => x.Name)
@@ -80,16 +83,17 @@ public class AnalyticsService(
 
         var customersWithMaxDuration = records
             .GroupBy(r => r.CustomerId)
-            .Select(x => new CustomerWithDurationDto
+            .Select(x =>
             {
-                Id = x.Key,
-                Name = customers.First(c => c.Id == x.Key).Name,
-                Duration = x.Max(r => r.BorrowDuration)
+                var customer = customers.First(c => c.Id == x.Key);
+                var dto = mapper.Map<CustomerWithDurationDto>(customer);
+                dto.Duration = x.Max(r => r.BorrowDuration);
+                return dto;
             })
             .ToList();
 
-        if (!customersWithMaxDuration.Any())
-            return new List<CustomerWithDurationDto>();
+        if (customersWithMaxDuration.Count == 0)
+            return [];
 
         var maxDuration = customersWithMaxDuration.Max(x => x.Duration);
 
@@ -142,17 +146,16 @@ public class AnalyticsService(
             .ToList();
 
         var topFiveBooksWithCount = books
-            .Select(b => new BookWithBorrowCountDto
-            {
-                Id = b.Id,
-                Title = b.Title,
-                Author = b.Author,
-                Count = recordsInPeriod.Count(r => r.BookId == b.Id)
-            })
-            .OrderBy(x => x.Count)
-            .ThenBy(x => x.Title)
-            .Take(5)
-            .ToList();
+        .Select(b =>
+        {
+            var dto = mapper.Map<BookWithBorrowCountDto>(b);
+            dto.Count = recordsInPeriod.Count(r => r.BookId == b.Id);
+            return dto;
+        })
+        .OrderBy(x => x.Count)
+        .ThenBy(x => x.Title)
+        .Take(5)
+        .ToList();
 
         return topFiveBooksWithCount;
     }

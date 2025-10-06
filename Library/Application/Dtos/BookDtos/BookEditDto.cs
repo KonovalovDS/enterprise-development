@@ -1,6 +1,4 @@
-﻿using Domain.Enums;
-
-namespace Application.Dtos.BookDtos;
+﻿namespace Application.Dtos.BookDtos;
 
 /// <summary>
 /// Represents a dto for a book that needed to create or edit.
@@ -30,12 +28,12 @@ public class BookEditDto
     /// <summary>
     /// Publisher of the book.
     /// </summary>
-    public required Publisher Publisher { get; set; }
+    public required string Publisher { get; set; }
 
     /// <summary>
     /// Type of publishing.
     /// </summary>
-    public required PublishingType PublishingType { get; set; }
+    public required string PublishingType { get; set; }
 
     /// <summary>
     /// Year the book was published.

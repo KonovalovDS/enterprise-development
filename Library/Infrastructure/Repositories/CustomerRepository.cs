@@ -50,8 +50,7 @@ public class CustomerRepository(AppDbContext context) : ICustomerRepository
     /// <param name="customer">Customer with updated data.</param>
     public async Task UpdateAsync(Customer customer) 
     {
-        var existingCustomer = await context.Customers.FindAsync(customer.Id);
-        if (existingCustomer == null)
+        var existingCustomer = await context.Customers.FindAsync(customer.Id) ?? 
             throw new KeyNotFoundException($"Customer with Id {customer.Id} not found.");
 
         existingCustomer.Name = customer.Name;
@@ -68,8 +67,7 @@ public class CustomerRepository(AppDbContext context) : ICustomerRepository
     /// <param name="id">Customer ID.</param>
     public async Task DeleteAsync(int id) 
     {
-        var customer = await context.Customers.FindAsync(id);
-        if (customer == null)
+        var customer = await context.Customers.FindAsync(id) ??
             throw new KeyNotFoundException($"Customer with Id {id} not found.");
 
         context.Customers.Remove(customer);

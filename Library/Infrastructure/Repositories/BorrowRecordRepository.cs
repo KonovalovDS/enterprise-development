@@ -50,8 +50,7 @@ public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordReposit
     /// <param name="record">Record with updated data.</param>
     public async Task UpdateAsync(BorrowRecord record) 
     {
-        var existingRecord = await context.BorrowRecords.FindAsync(record.Id);
-        if (existingRecord == null)
+        var existingRecord = await context.BorrowRecords.FindAsync(record.Id) ?? 
             throw new KeyNotFoundException($"Record with Id {record.Id} not found.");
 
         existingRecord.BookId = record.BookId;
@@ -69,8 +68,7 @@ public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordReposit
     /// <param name="id">Record ID.</param>
     public async Task DeleteAsync(int id) 
     {
-        var record = await context.BorrowRecords.FindAsync(id);
-        if (record == null)
+        var record = await context.BorrowRecords.FindAsync(id) ??
             throw new KeyNotFoundException($"Record with Id {id} not found.");
 
         context.BorrowRecords.Remove(record);
