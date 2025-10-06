@@ -67,9 +67,9 @@ public class BookController(
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        if (!Enum.TryParse<Publisher>(newBookDto.Publisher, true, out var publisherEnum))
-            return BadRequest($"Invalid publisher: {newBookDto.Publisher}");
-        if (!Enum.TryParse<PublishingType>(newBookDto.PublishingType, true, out var publishingTypeEnum))
+        if (!Enum.IsDefined(typeof(Publisher), newBookDto.Publisher))
+            return BadRequest($"Invalid publishing type: {newBookDto.Publisher}");
+        if (!Enum.IsDefined(typeof(PublishingType), newBookDto.PublishingType))
             return BadRequest($"Invalid publishing type: {newBookDto.PublishingType}");
 
         var newBook = mapper.Map<Book>(newBookDto);
@@ -89,9 +89,9 @@ public class BookController(
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        if (!Enum.TryParse<Publisher>(updatedBookDto.Publisher, true, out var publisherEnum))
-            return BadRequest($"Invalid publisher: {updatedBookDto.Publisher}");
-        if (!Enum.TryParse<PublishingType>(updatedBookDto.PublishingType, true, out var publishingTypeEnum))
+        if (!Enum.IsDefined(typeof(Publisher), updatedBookDto.Publisher))
+            return BadRequest($"Invalid publishing type: {updatedBookDto.Publisher}");
+        if (!Enum.IsDefined(typeof(PublishingType), updatedBookDto.PublishingType))
             return BadRequest($"Invalid publishing type: {updatedBookDto.PublishingType}");
 
         var book = await bookRepository.GetByIdAsync(id);
