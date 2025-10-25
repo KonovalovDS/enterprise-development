@@ -25,4 +25,4 @@ jobs:
         run: dotnet build ./Library/Library.sln --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test ./Library/Tests/Tests.csproj --configuration Release --verbosity normal
+        run: dotnet test ./Library/Library.Tests/Library.Tests.csproj --configuration Release --verbosity normal
