@@ -5,7 +5,7 @@ using Library.DataGenerator;
 
 namespace Library.RabbitMqProducer;
 
-public class RabbitMqProducerWorker(IConnection connection) : BackgroundService
+public class RabbitMqProducer(IConnection connection) : BackgroundService
 {
     private IChannel? _channel;
     private readonly BogusGenerator _generator = new();

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Library.RabbitMqConsumer;
 
-public class RabbitMqConsumerWorker(ILogger<RabbitMqConsumerWorker> logger, IConnection connection) : BackgroundService
+public class RabbitMqConsumer(ILogger<RabbitMqConsumer> logger, IConnection connection) : BackgroundService
 {
     private IChannel? _channel;
     private const string ExchangeName = "data-exchange";
