@@ -5,7 +5,7 @@ using Library.Application.Contracts.BorrowRecordDtos;
 using Library.Application.Contracts.CustomerDtos;
 using Library.Domain.Entities;
 
-namespace Library.Application.Mappers;
+namespace Library.Application.Contracts.Mappers;
 
 /// <summary>
 /// AutoMapper profile for mapping between domain entities and their DTOs.

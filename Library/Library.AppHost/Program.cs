@@ -8,6 +8,7 @@ var api = builder.AddProject<Projects.Library_Api>("LibraryApi")
     .WithReference(postgresDb, "DefaultConnection")
     .WaitFor(postgresDb);
 
-builder.AddProject<Projects.Library_DataGenerator>("library-datagenerator");
+builder.AddProject<Projects.Library_RabbitMqConsumer>("library-rabbitmqconsumer");
+builder.AddProject<Projects.Library_RabbitMqProducer>("library-rabbitmqproducer");
 
 builder.Build().Run();

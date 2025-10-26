@@ -14,15 +14,15 @@ public class BogusGenerator
     {
         var publishers = new[]
         {
-            "NorthernWord", 
-            "BookMosaic", 
-            "LiteraryWind", 
-            "GoldenPage", 
-            "EchoOfThought", 
-            "TheBinding", 
-            "IntellectPublishing", 
-            "WhiteLine", 
-            "BeaconPress", 
+            "NorthernWord",
+            "BookMosaic",
+            "LiteraryWind",
+            "GoldenPage",
+            "EchoOfThought",
+            "TheBinding",
+            "IntellectPublishing",
+            "WhiteLine",
+            "BeaconPress",
             "NewEraPublishing"
         };
 
