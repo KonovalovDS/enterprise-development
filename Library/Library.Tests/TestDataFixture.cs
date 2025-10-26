@@ -1,7 +1,7 @@
-﻿using Domain.DataSeeders;
-using Domain.Entities;
+﻿using Library.Domain.DataSeeders;
+using Library.Domain.Entities;
 
-namespace Tests;
+namespace Library.Tests;
 
 /// <summary>
 /// Test data fixture for the library.

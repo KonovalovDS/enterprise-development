@@ -1,6 +1,6 @@
-﻿using Domain.Enums;
+﻿using Library.Domain.Enums;
 
-namespace Tests;
+namespace Library.Tests;
 
 /// <summary>
 /// Unit tests for domain layer.
