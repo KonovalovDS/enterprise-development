@@ -1,17 +1,45 @@
-using RabbitMQ.Client;
-using System.Text.Json;
-using System.Text;
 using Library.DataGenerator;
+using RabbitMQ.Client;
+using System.Text;
+using System.Text.Json;
 
 namespace Library.RabbitMqProducer;
 
-public class RabbitMqProducer(IConnectionFactory connectionFactory, ILogger<RabbitMqProducer> logger) : BackgroundService
+/// <summary>
+/// RabbitMQ producer service that generates and sends book, customer, and borrow record contracts.
+/// This service runs as a <see cref="BackgroundService"/> and periodically publishes messages.
+/// </summary>
+/// <param name="connectionFactory">Factory used to create RabbitMQ connections.</param>
+/// <param name="logger">Logger instance for logging publishing activity and errors.</param>
+public class RabbitMqProducer(
+    IConnectionFactory connectionFactory,
+    ILogger<RabbitMqProducer> logger) : BackgroundService
 {
+    /// <summary>
+    /// Data generator that produces books, customers and borrow records contracts.
+    /// </summary>
     private readonly BogusGenerator _generator = new();
+
+    /// <summary>
+    /// RabbitMQ connection object used to establish communication with the broker.
+    /// </summary>
     private IConnection? _connection;
+
+    /// <summary>
+    /// RabbitMQ channel object used for declaring exchanges and publishing messages.
+    /// </summary>
     private IChannel? _channel;
+
+    /// <summary>
+    /// Name of the RabbitMQ exchange to which messages are published.
+    /// </summary>
     private const string ExchangeName = "data-exchange";
 
+    /// <summary>
+    /// Executes the producer service asynchronously, generating data and publishing it
+    /// to RabbitMQ until the <paramref name="stoppingToken"/> signals cancellation.
+    /// </summary>
+    /// <param name="stoppingToken">Cancellation token to stop the background service.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
@@ -72,7 +100,7 @@ public class RabbitMqProducer(IConnectionFactory connectionFactory, ILogger<Rabb
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     logger.LogError(ex, "Error sending message");
-                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(0.1), stoppingToken);
                 }
             }
         }
@@ -82,6 +110,10 @@ public class RabbitMqProducer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
+    /// <summary>
+    /// Stops the producer service by closing the RabbitMQ channel and connection.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for stopping the service.</param>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         try
@@ -108,6 +140,9 @@ public class RabbitMqProducer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
+    /// <summary>
+    /// Disposes the RabbitMQ channel and connection resources.
+    /// </summary>
     public override void Dispose()
     {
         _channel?.Dispose();

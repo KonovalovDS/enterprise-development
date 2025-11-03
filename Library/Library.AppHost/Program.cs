@@ -1,6 +1,4 @@
-using Aspire.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using RabbitMQ.Client;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -12,10 +10,16 @@ var api = builder.AddProject<Projects.Library_Api>("LibraryApi")
     .WithReference(postgresDb, "DefaultConnection")
     .WaitFor(postgresDb);
 
-var rabbitMq = builder.AddRabbitMQ("RabbitMQ");
+var username = builder.AddParameter("username", secret: true);
+var password = builder.AddParameter("password", secret: true);
+
+var rabbitMq = builder.AddRabbitMQ("RabbitMQ", username, password)
+    .WithManagementPlugin();
 
 var consumerService = builder.AddProject<Projects.Library_RabbitMqConsumer>("RabbitMqConsumer")
     .WithReference(rabbitMq)
+    .WithReference(postgresDb, "DefaultConnection")
+    .WaitFor(postgresDb)
     .WaitFor(rabbitMq);
 
 var producerService = builder.AddProject<Projects.Library_RabbitMqProducer>("RabbitMqProducer")

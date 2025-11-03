@@ -1,17 +1,56 @@
-using Library.Infrastructure.Persistence;
+using AutoMapper;
+using Library.Application.Contracts.BookDtos;
+using Library.Application.Contracts.BorrowRecordDtos;
+using Library.Application.Contracts.CustomerDtos;
+using Library.Domain.Entities;
+using Library.Domain.Interfaces;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
+using System.Text.Json;
 
 namespace Library.RabbitMqConsumer;
 
-public class RabbitMqConsumer(IConnectionFactory connectionFactory, ILogger<RabbitMqConsumer> logger) : BackgroundService
+/// <summary>
+/// RabbitMQ consumer service that listens to messages for books, customers, and borrow records.
+/// Implements <see cref="BackgroundService"/> to run continuously in the background.
+/// Processes incoming messages using JSON deserialization and AutoMapper, then stores data via repositories.
+/// </summary>
+/// <param name="connectionFactory">The factory used to create RabbitMQ connections.</param>
+/// <param name="logger">Logger instance for logging consumer activities, errors and info.</param>
+/// <param name="mapper">AutoMapper instance used to map DTOs to entity objects.</param>
+/// <param name="scopeFactory">Service scope factory used to create scoped service providers for repositories.</param>
+public class RabbitMqConsumer(
+    IConnectionFactory connectionFactory,
+    ILogger<RabbitMqConsumer> logger,
+    IMapper mapper,
+    IServiceScopeFactory scopeFactory) : BackgroundService
 {
+    /// <summary>
+    /// RabbitMQ connection object used to establish communication with the broker.
+    /// </summary>
     private IConnection? _connection;
+
+    /// <summary>
+    /// RabbitMQ channel object used for declaring exchanges, queues, and consuming messages.
+    /// </summary>
     private IChannel? _channel;
+
+    /// <summary>
+    /// Name of the RabbitMQ exchange to which messages are published.
+    /// </summary>
     private const string ExchangeName = "data-exchange";
+
+    /// <summary>
+    /// Name of the RabbitMQ queue from which messages are consumed.
+    /// </summary>
     private const string QueueName = "data-queue";
 
+    /// <summary>
+    /// Executes the consumer service asynchronously, connecting to RabbitMQ, binding queues 
+    /// and starting message consumption.
+    /// </summary>
+    /// <param name="stoppingToken">Cancellation token used to stop the background service.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
@@ -71,20 +110,30 @@ public class RabbitMqConsumer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
+    /// <summary>
+    /// Processes an incoming RabbitMQ message based on its routing key.
+    /// </summary>
+    /// <param name="routingKey">Routing key of the message.</param>
+    /// <param name="json">Message payload as a JSON string.</param>
     private async Task ProcessMessageAsync(string routingKey, string json)
     {
         try
         {
+            using var scope = scopeFactory.CreateScope();
+            var bookRepository = scope.ServiceProvider.GetRequiredService<IBookRepository>();
+            var customerRepository = scope.ServiceProvider.GetRequiredService<ICustomerRepository>();
+            var recordRepository = scope.ServiceProvider.GetRequiredService<IBorrowRecordRepository>();
+
             switch (routingKey)
             {
                 case "book.create":
-                    await ProcessBookMessageAsync(json);
+                    await ProcessBookMessageAsync(json, bookRepository);
                     break;
                 case "customer.create":
-                    await ProcessCustomerMessageAsync(json);
+                    await ProcessCustomerMessageAsync(json, customerRepository);
                     break;
                 case "record.create":
-                    await ProcessRecordMessageAsync(json);
+                    await ProcessRecordMessageAsync(json, recordRepository);
                     break;
                 default:
                     logger.LogWarning("Unknown routing key: {RoutingKey}", routingKey);
@@ -100,12 +149,24 @@ public class RabbitMqConsumer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
-    private async Task ProcessBookMessageAsync(string json)
+    /// <summary>
+    /// Processes a book creation message.
+    /// </summary>
+    /// <param name="json">JSON string payload.</param>
+    /// <param name="bookRepository">Repository instance to save the book entity.</param>
+    private async Task ProcessBookMessageAsync(string json, IBookRepository bookRepository)
     {
         try
         {
             logger.LogInformation("Processing book message: {Json}", json);
-            await Task.CompletedTask;
+            var bookDto = JsonSerializer.Deserialize<BookEditDto>(json);
+            if (bookDto == null)
+            {
+                logger.LogWarning("Received invalid book message: {Json}", json);
+                return;
+            }
+            var book = mapper.Map<Book>(bookDto);
+            await bookRepository.AddAsync(book);
         }
         catch (Exception ex)
         {
@@ -114,12 +175,24 @@ public class RabbitMqConsumer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
-    private async Task ProcessCustomerMessageAsync(string json)
+    /// <summary>
+    /// Processes a customer creation message.
+    /// </summary>
+    /// <param name="json">JSON string payload.</param>
+    /// <param name="customerRepository">Repository instance to save the customer entity.</param>
+    private async Task ProcessCustomerMessageAsync(string json, ICustomerRepository customerRepository)
     {
         try
         {
             logger.LogInformation("Processing customer message: {Json}", json);
-            await Task.CompletedTask;
+            var customerDto = JsonSerializer.Deserialize<CustomerEditDto>(json);
+            if (customerDto == null)
+            {
+                logger.LogWarning("Received invalid customer message: {Json}", json);
+                return;
+            }
+            var customer = mapper.Map<Customer>(customerDto);
+            await customerRepository.AddAsync(customer);
         }
         catch (Exception ex)
         {
@@ -128,20 +201,37 @@ public class RabbitMqConsumer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
-    private async Task ProcessRecordMessageAsync(string json)
+    /// <summary>
+    /// Processes a borrow record creation message.
+    /// </summary>
+    /// <param name="json">JSON string payload.</param>
+    /// <param name="borrowRecordRepository">Repository instance to save the borrow record entity.</param>
+    private async Task ProcessRecordMessageAsync(string json, IBorrowRecordRepository borrowRecordRepository)
     {
         try
         {
             logger.LogInformation("Processing record message: {Json}", json);
-            await Task.CompletedTask;
+            var recordDto = JsonSerializer.Deserialize<BorrowRecordEditDto>(json);
+            if (recordDto == null)
+            {
+                logger.LogWarning("Received invalid borrow record message: {Json}", json);
+                return;
+            }
+            var record = mapper.Map<BorrowRecord>(recordDto);
+
+            await borrowRecordRepository.AddAsync(record);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing record message");
+            logger.LogError(ex, "Error processing borrow record message");
             throw;
         }
     }
 
+    /// <summary>
+    /// Stops the consumer service by closing the RabbitMQ channel and connection.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for stopping the service.</param>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         try
@@ -168,6 +258,9 @@ public class RabbitMqConsumer(IConnectionFactory connectionFactory, ILogger<Rabb
         }
     }
 
+    /// <summary>
+    /// Disposes the RabbitMQ channel and connection resources.
+    /// </summary>
     public override void Dispose()
     {
         _channel?.Dispose();

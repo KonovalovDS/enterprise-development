@@ -1,9 +1,21 @@
+using Library.Application.Contracts.Mappers;
+using Library.Domain.Interfaces;
+using Library.Infrastructure.Persistence;
+using Library.Infrastructure.Repositories;
 using Library.RabbitMqConsumer;
 using RabbitMQ.Client;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "DefaultConnection");
+
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
+
+builder.Services.AddAutoMapper(typeof(AppMappingProfile).Assembly);
 
 builder.Services.AddSingleton<IConnectionFactory>(serviceProvider =>
 {
