@@ -47,6 +47,42 @@ public class RabbitMqConsumer(
     private const string QueueName = "data-queue";
 
     /// <summary>
+    /// Attempts to establish a connection to RabbitMQ using the <see cref="IConnectionFactory"/>,
+    /// retrying on failure up to a specified number of times with a delay between attempts.
+    /// </summary>
+    /// <param name="stoppingToken">A <see cref="CancellationToken"/> to cancel connection attempts.</param>
+    /// <param name="maxRetries">The maximum number of retry attempts before throwing an exception.</param>
+    /// <param name="delayMs">The delay in milliseconds between retry attempts.</param>
+    private async Task<IConnection> ConnectWithRetryAsync(
+        CancellationToken stoppingToken, 
+        int maxRetries = 5, 
+        int delayMs = 1000)
+    {
+        var attempt = 0;
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                attempt++;
+                var connection = await connectionFactory.CreateConnectionAsync();
+                logger.LogInformation("Successfully connected to RabbitMQ on attempt {Attempt}", attempt);
+                return connection;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to connect to RabbitMQ on attempt {Attempt}", attempt);
+                if (attempt >= maxRetries)
+                {
+                    logger.LogError("Maximum retry attempts reached ({MaxRetries}). Throwing exception.", maxRetries);
+                    throw;
+                }
+                await Task.Delay(delayMs, stoppingToken);
+            }
+        }
+        throw new OperationCanceledException("Connection attempt was cancelled.");
+    }
+
+    /// <summary>
     /// Executes the consumer service asynchronously, connecting to RabbitMQ, binding queues 
     /// and starting message consumption.
     /// </summary>
@@ -55,8 +91,9 @@ public class RabbitMqConsumer(
     {
         try
         {
-            _connection = await connectionFactory.CreateConnectionAsync();
+            _connection = await ConnectWithRetryAsync(stoppingToken);
             _channel = await _connection.CreateChannelAsync();
+
             await _channel.ExchangeDeclareAsync(
                 exchange: ExchangeName,
                 type: ExchangeType.Direct,

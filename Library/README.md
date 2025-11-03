@@ -5,9 +5,12 @@
 - Entity Framework + PostgreSQL
 - xUnit
 - .NET Aspire
+- Bogus
+- RabbitMQ
   
 **Информация о запуске**
 При запуске AppHost приложение автоматически поднимает контейнер для БД, миграции применяются в `Api` после подключения, строка подключения создается и передается в `Api` через Aspire. Для запуска необходим запущенный Docker.
+Для запуска RabbitMQ необходимо ввести данные пользователя на панели ресурсов Aspire, эти данные используются для входа на соответствующий dashboard.
 
 #### Структура проекта
 - [Library](#library)
@@ -15,9 +18,12 @@
     - [Domain](#domain)
     - [Infrastructure](#infrastructure)
     - [Application](#application)
+    - [Application.Contracts](#applicationcontracts)
     - [Api](#api)
     - [Tests](#tests)
     - [AppHost](#apphost)
+    - [DataGenerator](#datagenerator)
+    - [RabbitMQ](#rabbitmq)
 
 #### Domain
 - **Entities** — сущности предметной области:
@@ -44,6 +50,8 @@
 #### Application
 - **Services** — Сервисы с методами для работы с приложением:
   - `AnalyticsService` — Сервис с методами для получения аналитических данных о библиотеке.
+
+#### Application.Contracts
 - **Mappers** — Мапперы для DTO и сущностей из `Domain.Entities`:
   - `AppMappingProfile` — Профиль для автомаппера.
 - **Dtos** — DTO, используемые в сервисах и для работы API:
@@ -66,3 +74,11 @@
 
 #### AppHost
 - `Program` - Отвечает за запуск приложения с помощью Aspire, настройка зависимостей разных модулей и создание контейнеров.
+
+#### DataGenerator
+- `BogusGenerator` - Генератор на основе Bogus для создания контрактов для книг, пользователей и записей выданных книг.
+
+#### RabbitMQ
+- Содержит два проекта - Producer и Consumer, запускаются как Background сервисы, конфигурируются в `AppHost`.
+- **Producer** - Использует `DataGenerator` для генерации контрактов и отправляет их по подключенному каналу, по умолчанию отправляет рандомный контракт каждую 0.1 секунды.
+- **Consumer** - Принимает контракты по покдлюченному каналу, десериализует и сохраняет в бд.
