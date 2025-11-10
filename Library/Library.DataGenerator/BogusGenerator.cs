@@ -28,12 +28,12 @@ public class BogusGenerator
     /// <summary>
     /// books counter including seeded data in db & generated data.
     /// </summary>
-    private int _booksCount = 20;
+    private int _booksCount = 1;
 
     /// <summary>
     /// customers counter including seeded data in db & generated data.
     /// </summary>
-    private int _customersCount = 10;
+    private int _customersCount = 1;
 
     /// <summary>
     /// Initializes an instance of <see cref="BogusGenerator"/> and sets up Faker rules for each entity.

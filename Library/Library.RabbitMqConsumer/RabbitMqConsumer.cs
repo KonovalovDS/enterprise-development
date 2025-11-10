@@ -27,16 +27,6 @@ public class RabbitMqConsumer(
     IServiceScopeFactory scopeFactory) : BackgroundService
 {
     /// <summary>
-    /// RabbitMQ connection object used to establish communication with the broker.
-    /// </summary>
-    private IConnection? _connection;
-
-    /// <summary>
-    /// RabbitMQ channel object used for declaring exchanges, queues, and consuming messages.
-    /// </summary>
-    private IChannel? _channel;
-
-    /// <summary>
     /// Name of the RabbitMQ exchange to which messages are published.
     /// </summary>
     private const string ExchangeName = "data-exchange";
@@ -64,7 +54,7 @@ public class RabbitMqConsumer(
             try
             {
                 attempt++;
-                var connection = await connectionFactory.CreateConnectionAsync();
+                var connection = await connectionFactory.CreateConnectionAsync(stoppingToken);
                 logger.LogInformation("Successfully connected to RabbitMQ on attempt {Attempt}", attempt);
                 return connection;
             }
@@ -91,28 +81,31 @@ public class RabbitMqConsumer(
     {
         try
         {
-            _connection = await ConnectWithRetryAsync(stoppingToken);
-            _channel = await _connection.CreateChannelAsync();
+            await using var connection = await ConnectWithRetryAsync(stoppingToken);
+            await using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            await _channel.ExchangeDeclareAsync(
+            await channel.ExchangeDeclareAsync(
                 exchange: ExchangeName,
                 type: ExchangeType.Direct,
                 durable: true,
-                autoDelete: false);
+                autoDelete: false,
+                cancellationToken: stoppingToken);
 
-            await _channel.QueueDeclareAsync(
+            await channel.QueueDeclareAsync(
                 queue: QueueName,
                 durable: true,
                 exclusive: false,
-                autoDelete: false);
+                autoDelete: false,
+                cancellationToken: stoppingToken);
+
             var routingKeys = new[] { "book.create", "customer.create", "record.create" };
             foreach (var routingKey in routingKeys)
             {
-                await _channel.QueueBindAsync(QueueName, ExchangeName, routingKey);
+                await channel.QueueBindAsync(QueueName, ExchangeName, routingKey, cancellationToken: stoppingToken);
             }
-            await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+            await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false, cancellationToken: stoppingToken);
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
+            var consumer = new AsyncEventingBasicConsumer(channel);
 
             consumer.ReceivedAsync += async (sender, ea) =>
             {
@@ -124,19 +117,27 @@ public class RabbitMqConsumer(
                     logger.LogInformation("Received message. RoutingKey: {RoutingKey}, Body: {Json}", routingKey, json);
                     await ProcessMessageAsync(routingKey, json);
 
-                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                    await channel.BasicAckAsync(
+                        ea.DeliveryTag, 
+                        multiple: false, 
+                        cancellationToken: stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Error processing message. RoutingKey: {RoutingKey}", ea.RoutingKey);
-                    await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
+                    await channel.BasicNackAsync(
+                        ea.DeliveryTag, 
+                        multiple: false, 
+                        requeue: false, 
+                        cancellationToken: stoppingToken);
                 }
             };
 
-            await _channel.BasicConsumeAsync(
+            await channel.BasicConsumeAsync(
                 queue: QueueName,
                 autoAck: false,
-                consumer: consumer);
+                consumer: consumer, 
+                cancellationToken: stoppingToken);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }
@@ -176,8 +177,6 @@ public class RabbitMqConsumer(
                     logger.LogWarning("Unknown routing key: {RoutingKey}", routingKey);
                     break;
             }
-
-            await Task.Delay(100);
         }
         catch (Exception ex)
         {
@@ -263,45 +262,5 @@ public class RabbitMqConsumer(
             logger.LogError(ex, "Error processing borrow record message");
             throw;
         }
-    }
-
-    /// <summary>
-    /// Stops the consumer service by closing the RabbitMQ channel and connection.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for stopping the service.</param>
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (_channel != null && _channel.IsOpen)
-            {
-                await _channel.CloseAsync();
-                await _channel.DisposeAsync();
-            }
-
-            if (_connection != null && _connection.IsOpen)
-            {
-                await _connection.CloseAsync();
-                await _connection.DisposeAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error during RabbitMQ Consumer shutdown");
-        }
-        finally
-        {
-            await base.StopAsync(cancellationToken);
-        }
-    }
-
-    /// <summary>
-    /// Disposes the RabbitMQ channel and connection resources.
-    /// </summary>
-    public override void Dispose()
-    {
-        _channel?.Dispose();
-        _connection?.Dispose();
-        base.Dispose();
     }
 }

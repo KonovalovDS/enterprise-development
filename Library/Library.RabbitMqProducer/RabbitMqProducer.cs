@@ -2,6 +2,7 @@ using Library.DataGenerator;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 
 namespace Library.RabbitMqProducer;
 
@@ -19,16 +20,6 @@ public class RabbitMqProducer(
     /// Data generator that produces books, customers and borrow records contracts.
     /// </summary>
     private readonly BogusGenerator _generator = new();
-
-    /// <summary>
-    /// RabbitMQ connection object used to establish communication with the broker.
-    /// </summary>
-    private IConnection? _connection;
-
-    /// <summary>
-    /// RabbitMQ channel object used for declaring exchanges and publishing messages.
-    /// </summary>
-    private IChannel? _channel;
 
     /// <summary>
     /// Name of the RabbitMQ exchange to which messages are published.
@@ -53,7 +44,7 @@ public class RabbitMqProducer(
             try
             {
                 attempt++;
-                var connection = await connectionFactory.CreateConnectionAsync();
+                var connection = await connectionFactory.CreateConnectionAsync(stoppingToken);
                 logger.LogInformation("Successfully connected to RabbitMQ on attempt {Attempt}", attempt);
                 return connection;
             }
@@ -80,14 +71,18 @@ public class RabbitMqProducer(
     {
         try
         {
-            _connection = await ConnectWithRetryAsync(stoppingToken);
-            _channel = await _connection.CreateChannelAsync();
+            await using var connection = await ConnectWithRetryAsync(stoppingToken);
+            await using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            await _channel.ExchangeDeclareAsync(
+            var delayMsString = Environment.GetEnvironmentVariable("RABBITMQ_PUBLISH_DELAY_MS");
+            var delayMs = int.TryParse(delayMsString, out var value) ? value : 100;
+
+            await channel.ExchangeDeclareAsync(
                 exchange: ExchangeName,
                 type: ExchangeType.Direct,
                 durable: true,
-                autoDelete: false);
+                autoDelete: false, 
+                cancellationToken: stoppingToken);
 
             var random = new Random();
             while (!stoppingToken.IsCancellationRequested)
@@ -121,22 +116,23 @@ public class RabbitMqProducer(
                     var json = JsonSerializer.Serialize(payload);
                     var body = Encoding.UTF8.GetBytes(json);
 
-                    await _channel.BasicPublishAsync(
+                    await channel.BasicPublishAsync(
                         exchange: ExchangeName,
                         routingKey: routingKey,
                         mandatory: false,
                         basicProperties: new BasicProperties { Persistent = true },
-                        body: body);
+                        body: body, 
+                        cancellationToken: stoppingToken);
 
                     logger.LogInformation("Sent message. RoutingKey: {RoutingKey}, Type: {Type}",
                         routingKey, payload.GetType().Name);
 
-                    await Task.Delay(TimeSpan.FromSeconds(0.1), stoppingToken);
+                    await Task.Delay(delayMs, stoppingToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     logger.LogError(ex, "Error sending message");
-                    await Task.Delay(TimeSpan.FromSeconds(0.1), stoppingToken);
+                    await Task.Delay(delayMs, stoppingToken);
                 }
             }
         }
@@ -144,45 +140,5 @@ public class RabbitMqProducer(
         {
             throw;
         }
-    }
-
-    /// <summary>
-    /// Stops the producer service by closing the RabbitMQ channel and connection.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for stopping the service.</param>
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (_channel != null && _channel.IsOpen)
-            {
-                await _channel.CloseAsync();
-                await _channel.DisposeAsync();
-            }
-
-            if (_connection != null && _connection.IsOpen)
-            {
-                await _connection.CloseAsync();
-                await _connection.DisposeAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error during RabbitMQ Consumer shutdown");
-        }
-        finally
-        {
-            await base.StopAsync(cancellationToken);
-        }
-    }
-
-    /// <summary>
-    /// Disposes the RabbitMQ channel and connection resources.
-    /// </summary>
-    public override void Dispose()
-    {
-        _channel?.Dispose();
-        _connection?.Dispose();
-        base.Dispose();
     }
 }
