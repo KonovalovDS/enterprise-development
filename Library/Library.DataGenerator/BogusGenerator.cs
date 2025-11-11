@@ -28,18 +28,23 @@ public class BogusGenerator
     /// <summary>
     /// books counter including seeded data in db & generated data.
     /// </summary>
-    private int _booksCount = 1;
+    private int _booksCount;
 
     /// <summary>
     /// customers counter including seeded data in db & generated data.
     /// </summary>
-    private int _customersCount = 1;
+    private int _customersCount;
 
     /// <summary>
     /// Initializes an instance of <see cref="BogusGenerator"/> and sets up Faker rules for each entity.
     /// </summary>
-    public BogusGenerator()
+    /// <param name="existingBooksCount">Count of existing books records used as starting counter for generator.</param>
+    /// <param name="existingCustomersCount">Count of existing customers records used as starting counter for generator.</param>
+    public BogusGenerator(int existingBooksCount = 0, int existingCustomersCount = 0)
     {
+        _booksCount = existingBooksCount;
+        _customersCount = existingCustomersCount;
+
         var publishers = new[]
         {
             "NorthernWord",
@@ -76,8 +81,8 @@ public class BogusGenerator
             .RuleFor(x => x.PhoneNumber, f => f.Phone.PhoneNumber("+7##########"));
 
         _recordsFaker = new Faker<BorrowRecordEditDto>()
-            .RuleFor(x => x.BookId, f => f.Random.Int(1, _booksCount))
-            .RuleFor(x => x.CustomerId, f => f.Random.Int(1, _customersCount))
+            .RuleFor(x => x.BookId, f => f.Random.Int(1, _booksCount + 1))
+            .RuleFor(x => x.CustomerId, f => f.Random.Int(1, _customersCount + 1))
             .RuleFor(x => x.BorrowDate, f => DateOnly.FromDateTime(f.Date.Past(1)))
             .RuleFor(x => x.BorrowDuration, f => f.Random.Int(1, 90));
     }

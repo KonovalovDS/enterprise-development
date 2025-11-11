@@ -2,7 +2,6 @@ using Library.DataGenerator;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 
 namespace Library.RabbitMqProducer;
 
@@ -17,9 +16,19 @@ public class RabbitMqProducer(
     ILogger<RabbitMqProducer> logger) : BackgroundService
 {
     /// <summary>
+    /// Starting counter for bogus books records generator
+    /// </summary>
+    private const int BooksCount = 1;
+
+    /// <summary>
+    /// Starting counter for bogus customers records generator
+    /// </summary>
+    private const int CustomersCount = 1;
+
+    /// <summary>
     /// Data generator that produces books, customers and borrow records contracts.
     /// </summary>
-    private readonly BogusGenerator _generator = new();
+    private readonly BogusGenerator _generator = new(BooksCount, CustomersCount);
 
     /// <summary>
     /// Name of the RabbitMQ exchange to which messages are published.
