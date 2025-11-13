@@ -1,4 +1,5 @@
 using Library.DataGenerator;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +14,8 @@ namespace Library.RabbitMqProducer;
 /// <param name="logger">Logger instance for logging publishing activity and errors.</param>
 public class RabbitMqProducer(
     IConnectionFactory connectionFactory,
-    ILogger<RabbitMqProducer> logger) : BackgroundService
+    ILogger<RabbitMqProducer> logger,
+    IConfiguration configuration) : BackgroundService
 {
     /// <summary>
     /// Starting counter for bogus books records generator
@@ -83,8 +85,7 @@ public class RabbitMqProducer(
             await using var connection = await ConnectWithRetryAsync(stoppingToken);
             await using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            var delayMsString = Environment.GetEnvironmentVariable("RABBITMQ_PUBLISH_DELAY_MS");
-            var delayMs = int.TryParse(delayMsString, out var value) ? value : 100;
+            var delayMs = configuration.GetValue<int>("RABBITMQ_PUBLISH_DELAY_MS", 100);
 
             await channel.ExchangeDeclareAsync(
                 exchange: ExchangeName,
