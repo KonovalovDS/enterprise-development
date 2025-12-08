@@ -1,0 +1,74 @@
+﻿@page "/customers/edit/{Id:int}"
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.Interfaces
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components
+
+<h2 class="mb-4 text-center">Редактирование клиента</h2>
+
+@if (customer == null)
+{
+    <div class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="card customer-details-card mx-auto">
+        <div class="book-cover">
+            <span class="text-muted">Фото</span>
+        </div>
+        <div class="book-info flex-grow-1">
+            <div class="mb-3">
+                <label class="form-label">Имя</label>
+                <input class="form-control" @bind="customer.Name" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Телефон</label>
+                <input class="form-control" @bind="customer.PhoneNumber" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Адрес</label>
+                <input class="form-control" @bind="customer.Address" />
+            </div>
+
+            <div class="mt-3 d-flex gap-2 justify-content-end">
+                <button class="btn btn-primary" @onclick="Save">Сохранить</button>
+                <button class="btn btn-secondary" @onclick="GoBack">Отмена</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private CustomerEditDto? customer;
+
+    [Parameter] 
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await CustomerService.GetAsync(Id);
+        if (data != null)
+        {
+            customer = new CustomerEditDto
+                {
+                    Name = data.Name,
+                    PhoneNumber = data.PhoneNumber,
+                    Address = data.Address
+                };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (customer != null)
+        {
+            await CustomerService.UpdateAsync(Id, customer);
+            Navigation.NavigateTo($"/customers/{Id}");
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/customers");
+}

@@ -1,0 +1,75 @@
+﻿@page "/books/{Id:int}"
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Interfaces
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+@inject NavigationManager Navigation
+
+<h2 class="mb-4 text-center">Подробности книги</h2>
+
+@if (book == null)
+{
+    <div class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="card book-details-card mx-auto">
+        <div class="book-cover">
+            <span class="text-muted">Обложка</span>
+        </div>
+        <div class="book-info flex-grow-1">
+            <div class="mb-3">
+                <label class="form-label">Название</label>
+                <div class="field-value">@book.Title</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Автор</label>
+                <div class="field-value">@book.Author</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Издательство</label>
+                <div class="field-value">@book.Publisher</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Тип публикации</label>
+                <div class="field-value">@book.PublishingType</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Год публикации</label>
+                <div class="field-value">@book.PublicationYear</div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2 justify-content-end">
+                <button class="btn btn-primary" @onclick="() => EditBook(book.Id)">Редактировать</button>
+                <button class="btn btn-danger" @onclick="DeleteBook">Удалить</button>
+                <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private BookGetDto? book;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetAsync(Id);
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/books");
+    private void EditBook(int id) => Navigation.NavigateTo($"/books/edit/{id}");
+    private async Task DeleteBook()
+    {
+        if (book != null && await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить книгу '{book.Title}'?"))
+        {
+            await BookService.DeleteAsync(book.Id);
+            Navigation.NavigateTo("/books");
+        }
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+}

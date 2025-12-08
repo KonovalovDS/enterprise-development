@@ -1,0 +1,68 @@
+﻿@page "/records/{Id:int}"
+@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.Interfaces
+@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordService
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject NavigationManager Navigation
+
+<h2 class="mb-4 text-center">Подробности аренды</h2>
+
+@if (record == null || book == null || customer == null)
+{
+    <div class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="card mx-auto p-3 mb-4" style="max-width: 700px;">
+        <div class="mb-3"><strong>Книга:</strong> @book.Title</div>
+        <div class="mb-3"><strong>Клиент:</strong> @customer.Name</div>
+        <div class="mb-3"><strong>Дата аренды:</strong> @record.BorrowDate.ToString("yyyy-MM-dd")</div>
+        <div class="mb-3"><strong>Срок (дней):</strong> @record.BorrowDuration</div>
+        <div class="mb-3"><strong>Статус:</strong> @(isActive ? "Активна" : "Завершена")</div>
+
+        <div class="mt-3 d-flex gap-2 justify-content-end">
+            <button class="btn btn-primary" @onclick="EditRecord">Редактировать</button>
+            <button class="btn btn-danger" @onclick="DeleteRecord">Удалить</button>
+            <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
+        </div>
+    </div>
+}
+
+@code {
+    private BorrowRecordGetDto? record;
+    private BookGetDto? book;
+    private CustomerGetDto? customer;
+    private bool isActive;
+
+    [Parameter] 
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        record = await RecordService.GetAsync(Id);
+        if (record != null)
+        {
+            book = await BookService.GetAsync(record.BookId);
+            customer = await CustomerService.GetAsync(record.CustomerId);
+            isActive = record.BorrowDate.AddDays(record.BorrowDuration) >= DateOnly.FromDateTime(DateTime.Today);
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/records");
+    private void EditRecord() => Navigation.NavigateTo($"/records/edit/{Id}");
+    private async Task DeleteRecord()
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить запись аренды?"))
+        {
+            await RecordService.DeleteAsync(Id);
+            GoBack();
+        }
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+}

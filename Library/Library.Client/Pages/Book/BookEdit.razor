@@ -1,0 +1,85 @@
+﻿@page "/books/edit/{Id:int}"
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Interfaces
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+@inject NavigationManager Navigation
+
+<h2 class="mb-4 text-center">Редактирование книги</h2>
+
+@if (book == null)
+{
+    <div class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="card book-details-card mx-auto">
+        <div class="book-cover">
+            <span class="text-muted">Обложка</span>
+        </div>
+        <div class="book-info flex-grow-1">
+            <div class="mb-3">
+                <label class="form-label">Название</label>
+                <input class="form-control" @bind="book.Title" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Автор</label>
+                <input class="form-control" @bind="book.Author" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Издательство</label>
+                <input class="form-control" @bind="book.Publisher" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Тип публикации</label>
+                <input class="form-control" @bind="book.PublishingType" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Год публикации</label>
+                <input type="number" class="form-control" @bind="book.PublicationYear" />
+            </div>
+
+            <div class="mt-3 d-flex gap-2 justify-content-end">
+                <button class="btn btn-primary" @onclick="Save">Сохранить</button>
+                <button class="btn btn-secondary" @onclick="GoBack">Отмена</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private BookEditDto? book;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await BookService.GetAsync(Id);
+        if (data != null)
+        {
+            book = new BookEditDto
+                {
+                    Title = data.Title,
+                    Author = data.Author,
+                    Publisher = data.Publisher,
+                    PublishingType = data.PublishingType,
+                    PublicationYear = data.PublicationYear,
+                    Code = data.Code,
+                    InventoryNumber = data.InventoryNumber
+                };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (book != null)
+        {
+            await BookService.UpdateAsync(Id, book);
+            Navigation.NavigateTo($"/books/{Id}");
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/books");
+}

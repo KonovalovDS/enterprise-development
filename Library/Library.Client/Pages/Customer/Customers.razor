@@ -1,0 +1,61 @@
+﻿@page "/customers"
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.Interfaces
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject NavigationManager Navigation
+
+<h2 class="mb-4 text-center">Клиенты</h2>
+
+@if (customers == null)
+{
+    <div class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="mb-3">
+        <input class="form-control" placeholder="Поиск по имени или телефону..."
+               @bind="searchTerm" @bind:event="oninput" />
+    </div>
+
+    @if (!filteredCustomers.Any())
+    {
+        <p class="text-center">Клиентов не найдено.</p>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var customer in filteredCustomers)
+            {
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                   @onclick="() => GoToDetails(customer.Id)">
+                    <div>
+                        <strong>@customer.Name</strong><br />
+                        <small>@customer.PhoneNumber | @customer.Address</small>
+                    </div>
+                    <span class="text-muted">@customer.RegisterDate.ToString("yyyy-MM-dd")</span>
+                </a>
+            }
+        </div>
+    }
+}
+
+@code {
+    private List<CustomerGetDto>? customers;
+    private string searchTerm = "";
+
+    private IEnumerable<CustomerGetDto> filteredCustomers =>
+        string.IsNullOrWhiteSpace(searchTerm)
+        ? customers ?? Enumerable.Empty<CustomerGetDto>()
+        : (customers ?? Enumerable.Empty<CustomerGetDto>())
+            .Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                     || c.PhoneNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerService.GetAllAsync();
+    }
+
+    private void GoToDetails(int id) => Navigation.NavigateTo($"/customers/{id}");
+}

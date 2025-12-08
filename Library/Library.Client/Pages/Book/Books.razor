@@ -1,0 +1,54 @@
+﻿@page "/books"
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Interfaces
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+@inject NavigationManager Navigation
+
+<h2 class="mb-4 text-center">Каталог книг</h2>
+
+@if (books == null)
+{
+    <div class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else if (!books.Any())
+{
+    <p class="text-center">Книг нет.</p>
+}
+else
+{
+    <div class="books-grid">
+        @foreach (var book in books)
+        {
+            <div class="card clickable-card book-card" @onclick="() => GoToDetails(book.Id)">
+                <div class="book-cover">
+                    <span class="text-muted">Обложка</span>
+                </div>
+                <div class="card-body flex-grow-1">
+                    <h5 class="card-title">@book.Title</h5>
+                    <h6 class="card-subtitle">@book.Author</h6>
+                    <p>Год: @book.PublicationYear</p>
+                    <div class="mt-auto">
+                        <button class="btn btn-success" @onclick:stopPropagation="true" @onclick="() => BorrowBook(book.Id)">
+                            Забронировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<BookGetDto>? books;
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await BookService.GetAllAsync();
+    }
+
+    private void GoToDetails(int id) => Navigation.NavigateTo($"/books/{id}");
+
+    private void BorrowBook(int bookId) => Navigation.NavigateTo($"/records/create?bookId={bookId}");
+}

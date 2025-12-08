@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Library.Api\Library.Api.csproj" />
+    <ProjectReference Include="..\Library.Client\Library.Client.csproj" />
     <ProjectReference Include="..\Library.RabbitMqConsumer\Library.RabbitMqConsumer.csproj" />
     <ProjectReference Include="..\Library.RabbitMqProducer\Library.RabbitMqProducer.csproj" />
 	  <ProjectReference Include="..\Library.ServiceDefaults\Library.ServiceDefaults.csproj" IsAspireProjectResource="false" />
