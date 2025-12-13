@@ -22,6 +22,7 @@ public class BookController(
     /// <summary>
     /// Returns all books in the system.
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<List<BookGetDto>>> GetAllBooks()
@@ -35,6 +36,8 @@ public class BookController(
     /// Returns a book by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the book to return.</param>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BookGetDto>> GetBookById(int id)
@@ -50,12 +53,16 @@ public class BookController(
     /// Deletes a book by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the book to delete.</param>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteBookById(int id)
     {
-        var isExists = await bookRepository.ExistsById(id);
-        if (!isExists) return NotFound();
+        var exists = await bookRepository.ExistsById(id);
+        if (!exists)
+            return NoContent();
 
         await bookRepository.DeleteAsync(id);
         return NoContent();
@@ -65,6 +72,10 @@ public class BookController(
     /// Creates a new book.
     /// </summary>
     /// <param name="newBookDto">The data of the book to create.</param>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<BookGetDto>> CreateBook([FromBody] BookEditDto newBookDto)
@@ -88,6 +99,11 @@ public class BookController(
     /// </summary>
     /// <param name="id">The ID of the book to update.</param>
     /// <param name="updatedBookDto">The updated book data.</param>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateBook(int id, [FromBody] BookEditDto updatedBookDto)

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Library.Domain.Interfaces;
 using Library.Application.Contracts.AnalyticsDtos;
+using Library.Domain.Interfaces;
 
 namespace Library.Application.Services;
 

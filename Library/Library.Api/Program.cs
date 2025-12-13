@@ -1,11 +1,12 @@
-using Microsoft.EntityFrameworkCore;
+using Library.Application.Contracts.Mappers;
 using Library.Application.Services;
+using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using Library.Infrastructure.Persistence;
 using Library.Infrastructure.Repositories;
-using Library.Application.Contracts.Mappers;
-using Library.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +45,16 @@ builder.Services.AddScoped<AnalyticsService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    var contractsXml = Path.Combine(AppContext.BaseDirectory, "Library.Application.Contracts.xml");
+    if (File.Exists(contractsXml))
+        c.IncludeXmlComments(contractsXml);
+});
 
 var app = builder.Build();
 

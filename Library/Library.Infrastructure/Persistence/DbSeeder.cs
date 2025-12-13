@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Library.Domain.DataSeeders;
+﻿using Library.Domain.DataSeeders;
 using Library.Domain.Entities;
 using Library.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library.Infrastructure.Persistence;
 

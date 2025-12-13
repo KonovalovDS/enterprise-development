@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Library.Domain.Entities;
+﻿using Library.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library.Infrastructure.Persistence;
 
@@ -8,7 +8,7 @@ namespace Library.Infrastructure.Persistence;
 /// EF Core database context for the library application.
 /// </summary>
 /// <param name="options">The options for this context.</param>
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
     /// <summary>
     /// DbSet of books in the library.

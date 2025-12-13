@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+using Library.Application.Contracts.BorrowRecordDtos;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
-using Library.Application.Contracts.BorrowRecordDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Library.Api.Controllers;
@@ -16,6 +16,7 @@ namespace Library.Api.Controllers;
 /// <param name="bookRepository">Repository for accessing books.</param>
 /// <param name="customerRepository">Repository for accessing customers.</param>
 /// <param name="mapper">Mapper for dtos and entities.</param>
+/// <param name="userManager">User role manager that provides allowed methods.</param>
 [ApiController]
 [Authorize]
 [Route("api/records")]
@@ -29,6 +30,9 @@ public class BorrowRecordController(
     /// <summary>
     /// Returns all borrow records.
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<BorrowRecordGetDto>>> GetAllRecords()
@@ -42,6 +46,10 @@ public class BorrowRecordController(
     /// Returns a borrow record by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the borrow record to return.</param>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BorrowRecordGetDto>> GetRecordById(int id)
@@ -70,13 +78,16 @@ public class BorrowRecordController(
     /// Deletes a borrow record by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the borrow record to delete.</param>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteRecordById(int id)
     {
         var record = await borrowRecordRepository.GetByIdAsync(id);
         if (record == null)
-            return NotFound();
+            return NoContent();
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdmin = User.IsInRole("Admin");
@@ -93,6 +104,11 @@ public class BorrowRecordController(
     /// Creates a new borrow record.
     /// </summary>
     /// <param name="newRecordDto">The data for the new borrow record.</param>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<BorrowRecordGetDto>> CreateRecord([FromBody] BorrowRecordEditDto newRecordDto)
@@ -123,6 +139,11 @@ public class BorrowRecordController(
     /// </summary>
     /// <param name="id">The ID of the borrow record to update.</param>
     /// <param name="updatedRecordDto">The updated borrow record data.</param>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateRecord(int id, [FromBody] BorrowRecordEditDto updatedRecordDto)

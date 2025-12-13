@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+using Library.Application.Contracts.CustomerDtos;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
-using Library.Application.Contracts.CustomerDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Library.Api.Controllers;
@@ -14,6 +14,7 @@ namespace Library.Api.Controllers;
 /// </summary>
 /// <param name="customerRepository">Repository for accessing customer data.</param>
 /// <param name="mapper">Mapper for dtos and entities.</param>
+/// <param name="userManager">User role manager that provides allowed methods.</param>
 [ApiController]
 [Authorize]
 [Route("api/customers")]
@@ -25,6 +26,9 @@ public class CustomerController(
     /// <summary>
     /// Returns all customers.
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<CustomerGetDto>>> GetAllCustomers()
@@ -38,6 +42,10 @@ public class CustomerController(
     /// Returns a customer by their unique ID.
     /// </summary>
     /// <param name="id">The ID of the customer to return.</param>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CustomerGetDto>> GetCustomerById(int id)
@@ -60,12 +68,16 @@ public class CustomerController(
     /// Deletes a customer by their unique ID.
     /// </summary>
     /// <param name="id">The ID of the customer to delete.</param>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]  
     [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteCustomerById(int id)
     {
         var isExists = await customerRepository.ExistsById(id);
-        if (!isExists) return NotFound();
+        if (!isExists) 
+            return NoContent();
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdmin = User.IsInRole("Admin");
@@ -82,6 +94,8 @@ public class CustomerController(
     /// Creates a new customer.
     /// </summary>
     /// <param name="newCustomerDto">The data of the customer to create.</param>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<CustomerGetDto>> CreateCustomer([FromBody] CustomerEditDto newCustomerDto)
@@ -100,6 +114,11 @@ public class CustomerController(
     /// </summary>
     /// <param name="id">The ID of the customer to update.</param>
     /// <param name="updatedCustomerDto">The updated customer data.</param>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateCustomer(int id, [FromBody] CustomerEditDto updatedCustomerDto)
