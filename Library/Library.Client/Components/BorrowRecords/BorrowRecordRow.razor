@@ -1,0 +1,24 @@
+﻿@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.CustomerDtos
+
+<tr class="@(IsActive ? "record-active clickable-row" : "clickable-row")"
+    @onclick="() => OnSelect.InvokeAsync(Record.Id)">
+    <td>@(Book?.Title ?? "—")</td>
+    <td>@(Customer?.Name ?? "—")</td>
+    <td>@Record.BorrowDate.ToString("yyyy-MM-dd")</td>
+    <td>@Record.BorrowDuration</td>
+    <td>@(IsActive ? "Активна" : "Завершена")</td>
+</tr>
+
+@code {
+    [Parameter] public BorrowRecordGetDto Record { get; set; } = default!;
+    [Parameter] public BookGetDto? Book { get; set; }
+    [Parameter] public CustomerGetDto? Customer { get; set; }
+
+    [Parameter] public EventCallback<int> OnSelect { get; set; }
+
+    private bool IsActive =>
+        Record.BorrowDate.AddDays(Record.BorrowDuration) >=
+        DateOnly.FromDateTime(DateTime.Today);
+}

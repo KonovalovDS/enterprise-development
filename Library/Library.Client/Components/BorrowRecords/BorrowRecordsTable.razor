@@ -1,0 +1,32 @@
+﻿@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.CustomerDtos
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Книга</th>
+            <th>Клиент</th>
+            <th>Дата аренды</th>
+            <th>Срок (дней)</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var record in Records)
+        {
+            <BorrowRecordRow Record="record"
+                             Book="Books.FirstOrDefault(b => b.Id == record.BookId)"
+                             Customer="Customers.FirstOrDefault(c => c.Id == record.CustomerId)"
+                             OnSelect="OnSelect" />
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public List<BorrowRecordGetDto> Records { get; set; } = [];
+    [Parameter] public List<BookGetDto> Books { get; set; } = [];
+    [Parameter] public List<CustomerGetDto> Customers { get; set; } = [];
+
+    [Parameter] public EventCallback<int> OnSelect { get; set; }
+}

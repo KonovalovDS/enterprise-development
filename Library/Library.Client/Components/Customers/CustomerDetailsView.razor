@@ -1,0 +1,20 @@
+﻿@using Library.Client.Models.CustomerDtos
+@using Library.Client.Components.Books
+
+<div class="card customer-details-card mx-auto mb-4">
+    <div class="book-info flex-grow-1">
+        <BookField Label="Имя" Value="@Customer.Name" />
+        <BookField Label="Телефон" Value="@Customer.PhoneNumber" />
+        <BookField Label="Адрес" Value="@Customer.Address" />
+        <BookField Label="Дата регистрации" Value="@Customer.RegisterDate.ToString("yyyy-MM-dd")" />
+
+        <div class="mt-3 d-flex gap-2 justify-content-end">
+            @Actions
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CustomerGetDto Customer { get; set; } = default!;
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

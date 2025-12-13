@@ -1,0 +1,12 @@
+﻿<div class="mb-3">
+    <label class="form-label">@Label</label>
+    <input class="form-control"
+           type="@Type"
+           @bind="Value" />
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public object? Value { get; set; }
+}

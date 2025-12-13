@@ -1,0 +1,22 @@
+﻿@using Library.Client.Models.BookDtos
+
+<div class="card book-details-card mx-auto">
+    <BookCover />
+
+    <div class="book-info flex-grow-1">
+        <BookInput Label="Название" @bind-Value="Book.Title" />
+        <BookInput Label="Автор" @bind-Value="Book.Author" />
+        <BookInput Label="Издательство" @bind-Value="Book.Publisher" />
+        <BookInput Label="Тип публикации" @bind-Value="Book.PublishingType" />
+        <BookInput Label="Год публикации" Type="number" @bind-Value="Book.PublicationYear" />
+
+        <div class="mt-3 d-flex gap-2 justify-content-end">
+            @Actions
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public BookEditDto Book { get; set; } = default!;
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

@@ -1,0 +1,57 @@
+﻿@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.CustomerDtos
+
+<div class="book-details-card card mx-auto p-3" style="max-width:700px;">
+    <div class="book-info flex-grow-1">
+        <div class="mb-3">
+            <label class="form-label">Книга</label>
+            <select class="form-select" @bind="Model.BookId">
+                @foreach (var b in Books)
+                {
+                    <option value="@b.Id">@b.Title</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Клиент</label>
+            <select class="form-select" @bind="Model.CustomerId">
+                @foreach (var c in Customers)
+                {
+                    <option value="@c.Id">@c.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Дата аренды</label>
+            <input type="date" class="form-control" @bind="BorrowDateTemp" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Срок аренды (дней)</label>
+            <input type="number" class="form-control" @bind="Model.BorrowDuration" />
+        </div>
+
+        <div class="mt-3 d-flex justify-content-end gap-2">
+            <button class="btn btn-primary" @onclick="OnSave">Сохранить</button>
+            <button class="btn btn-secondary" @onclick="OnCancel">Отмена</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public BorrowRecordEditDto Model { get; set; } = default!;
+    [Parameter] public List<BookGetDto> Books { get; set; } = [];
+    [Parameter] public List<CustomerGetDto> Customers { get; set; } = [];
+
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private DateTime BorrowDateTemp
+    {
+        get => Model.BorrowDate.ToDateTime(TimeOnly.MinValue);
+        set => Model.BorrowDate = DateOnly.FromDateTime(value);
+    }
+}

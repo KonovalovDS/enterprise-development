@@ -1,0 +1,9 @@
+﻿<input class="form-control"
+       placeholder="Поиск по имени или телефону..."
+       @bind="SearchTerm"
+       @bind:event="oninput" />
+
+@code {
+    [Parameter] public string SearchTerm { get; set; } = "";
+    [Parameter] public EventCallback<string> SearchTermChanged { get; set; }
+}

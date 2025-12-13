@@ -1,87 +1,38 @@
 ﻿@page "/customers/{Id:int}"
-@using Library.Client.Models.BookDtos
 @using Library.Client.Models.CustomerDtos
 @using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.BookDtos
 @using Library.Client.Models.Interfaces
+@using Library.Client.Components.Common
+@using Library.Client.Components.Customers
 @inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
 @inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordService
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject NavigationManager Navigation
-@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
 
 <h2 class="mb-4 text-center">Подробности клиента</h2>
 
 @if (customer == null || records == null || books == null)
 {
-    <div class="d-flex justify-content-center my-5">
-        <div class="spinner-border text-primary" role="status"></div>
-    </div>
+    <Loader />
 }
 else
 {
-    <div class="card customer-details-card mx-auto mb-4">
-        <div class="book-info flex-grow-1">
-            <div class="mb-3">
-                <label class="form-label">Имя</label>
-                <div class="field-value">@customer.Name</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Телефон</label>
-                <div class="field-value">@customer.PhoneNumber</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Адрес</label>
-                <div class="field-value">@customer.Address</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Дата регистрации</label>
-                <div class="field-value">@customer.RegisterDate.ToString("yyyy-MM-dd")</div>
-            </div>
-
-            <div class="mt-3 d-flex gap-2 justify-content-end">
-                <button class="btn btn-primary" @onclick="() => EditCustomer(customer.Id)">Редактировать</button>
-                <button class="btn btn-danger" @onclick="DeleteCustomer">Удалить</button>
-                <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
-            </div>
-        </div>
-    </div>
+    <CustomerDetailsView Customer="customer">
+        <Actions>
+            <button class="btn btn-primary" @onclick="() => EditCustomer(customer.Id)">Редактировать</button>
+            <button class="btn btn-danger" @onclick="DeleteCustomer">Удалить</button>
+            <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
+        </Actions>
+    </CustomerDetailsView>
 
     <h3 class="mb-3">История заказов</h3>
-    @if (!records.Any())
-    {
-        <p>Заказов нет.</p>
-    }
-    else
-    {
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Книга</th>
-                    <th>Дата аренды</th>
-                    <th>Срок (дней)</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var record in records)
-                {
-                    var book = books.FirstOrDefault(b => b.Id == record.BookId);
 
-                    var isActive = record.BorrowDate.AddDays(record.BorrowDuration) >= DateOnly.FromDateTime(DateTime.Today);
-
-                    <tr class="@(isActive ? "record-active" : "")">
-                        <td>@(book?.Title ?? "—")</td>
-                        <td>@record.BorrowDate.ToString("yyyy-MM-dd")</td>
-                        <td>@record.BorrowDuration</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm me-1" @onclick="() => GoToRecord(record.Id)">Подробнее</button>
-                            <button class="btn btn-secondary btn-sm" @onclick="() => EditRecord(record.Id)">Редактировать</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    <CustomerRecordsTable Records="records"
+                          Books="books"
+                          OnView="GoToRecord"
+                          OnEdit="EditRecord" />
 }
 
 @code {
@@ -89,8 +40,7 @@ else
     private List<BorrowRecordGetDto>? records;
     private List<BookGetDto>? books;
 
-    [Parameter] 
-    public int Id { get; set; }
+    [Parameter] public int Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -103,17 +53,20 @@ else
 
     private void GoBack() => Navigation.NavigateTo("/customers");
     private void EditCustomer(int id) => Navigation.NavigateTo($"/customers/edit/{id}");
+
     private async Task DeleteCustomer()
     {
-        if (customer != null && await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить клиента '{customer.Name}'?"))
+        if (customer != null &&
+            await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить клиента '{customer.Name}'?"))
         {
             await CustomerService.DeleteAsync(customer.Id);
             Navigation.NavigateTo("/customers");
         }
     }
 
-    private void GoToRecord(int recordId) => Navigation.NavigateTo($"/records/{recordId}");
-    private void EditRecord(int recordId) => Navigation.NavigateTo($"/records/edit/{recordId}");
+    private void GoToRecord(int id) =>
+        Navigation.NavigateTo($"/records/{id}");
 
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    private void EditRecord(int id) =>
+        Navigation.NavigateTo($"/records/edit/{id}");
 }

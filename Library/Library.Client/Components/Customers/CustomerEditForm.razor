@@ -1,0 +1,23 @@
+﻿@using Library.Client.Models.CustomerDtos
+@using Library.Client.Components.Books
+
+<div class="card customer-details-card mx-auto">
+    <div class="book-cover">
+        <span class="text-muted">Фото</span>
+    </div>
+
+    <div class="book-info flex-grow-1">
+        <BookInput Label="Имя" @bind-Value="Customer.Name" />
+        <BookInput Label="Телефон" @bind-Value="Customer.PhoneNumber" />
+        <BookInput Label="Адрес" @bind-Value="Customer.Address" />
+
+        <div class="mt-3 d-flex gap-2 justify-content-end">
+            @Actions
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CustomerEditDto Customer { get; set; } = default!;
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

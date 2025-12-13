@@ -1,0 +1,25 @@
+﻿@using Library.Client.Models.BookDtos
+
+<div class="card clickable-card book-card" @onclick="OnOpen">
+    <BookCover />
+
+    <div class="card-body flex-grow-1">
+        <h5 class="card-title">@Book.Title</h5>
+        <h6 class="card-subtitle">@Book.Author</h6>
+        <p>Год: @Book.PublicationYear</p>
+
+        <div class="mt-auto">
+            <button class="btn btn-success"
+                    @onclick:stopPropagation="true"
+                    @onclick="OnBorrow">
+                Забронировать
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public BookGetDto Book { get; set; } = default!;
+    [Parameter] public EventCallback OnOpen { get; set; }
+    [Parameter] public EventCallback OnBorrow { get; set; }
+}

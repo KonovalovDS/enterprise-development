@@ -1,65 +1,32 @@
 ﻿@page "/records/create"
+
 @using Library.Client.Models.BorrowRecordDtos
 @using Library.Client.Models.BookDtos
 @using Library.Client.Models.CustomerDtos
 @using Library.Client.Models.Interfaces
+@using Library.Client.Components.BorrowRecords
+
 @inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordService
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
 @inject NavigationManager Navigation
 
-<h2 class="mb-4 text-center books-title">Создание записи аренды</h2>
+<h2 class="mb-4 text-center">Создание записи аренды</h2>
 
 @if (record == null || books == null || customers == null)
 {
     <div class="d-flex justify-content-center my-5">
-        <div class="spinner-border text-primary" role="status"></div>
+        <div class="spinner-border text-primary"></div>
     </div>
 }
 else
 {
-    <div class="book-details-card card mx-auto p-3" style="max-width:700px;">
-        <div class="book-cover d-flex align-items-center justify-content-center me-4">
-            <span class="text-muted">Обложка</span>
-        </div>
-
-        <div class="book-info flex-grow-1">
-            <div class="mb-3">
-                <label class="form-label">Книга</label>
-                <select class="form-select" @bind="record.BookId">
-                    @foreach (var b in books)
-                    {
-                        <option value="@b.Id">@b.Title</option>
-                    }
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Клиент</label>
-                <select class="form-select" @bind="record.CustomerId">
-                    @foreach (var c in customers)
-                    {
-                        <option value="@c.Id">@c.Name</option>
-                    }
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Дата аренды</label>
-                <input type="date" class="form-control" @bind="BorrowDateTemp" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Срок аренды (дней)</label>
-                <input type="number" class="form-control" @bind="record.BorrowDuration" />
-            </div>
-
-            <div class="mt-3 d-flex justify-content-end gap-2">
-                <button class="btn btn-primary" @onclick="Save">Создать</button>
-                <button class="btn btn-secondary" @onclick="GoBack">Отмена</button>
-            </div>
-        </div>
-    </div>
+    <BorrowRecordForm
+        Model="record"
+        Books="books"
+        Customers="customers"
+        OnSave="Save"
+        OnCancel="GoBack" />
 }
 
 @code {
@@ -67,34 +34,25 @@ else
     private List<BookGetDto>? books;
     private List<CustomerGetDto>? customers;
 
-    private DateTime BorrowDateTemp
-    {
-        get => record != null ? record.BorrowDate.ToDateTime(TimeOnly.MinValue) : DateTime.Today;
-        set
-        {
-            if (record != null)
-                record.BorrowDate = DateOnly.FromDateTime(value);
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
         record = new BorrowRecordEditDto
-            {
-                BookId = 0,
-                CustomerId = 0,
-                BorrowDate = DateOnly.FromDateTime(DateTime.Today),
-                BorrowDuration = 7
-            };
+        {
+            BookId = 0,
+            CustomerId = 0,
+            BorrowDate = DateOnly.FromDateTime(DateTime.Today),
+            BorrowDuration = 7
+        };
 
         books = await BookService.GetAllAsync();
         customers = await CustomerService.GetAllAsync();
 
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
         if (int.TryParse(query.Get("bookId"), out var bookId))
         {
-            if (books?.Any(b => b.Id == bookId) == true)
+            if (books.Any(b => b.Id == bookId))
             {
                 record.BookId = bookId;
             }
@@ -110,5 +68,8 @@ else
         }
     }
 
-    private void GoBack() => Navigation.NavigateTo("/records");
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/records");
+    }
 }
