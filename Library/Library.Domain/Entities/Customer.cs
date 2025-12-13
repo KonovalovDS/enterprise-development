@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a customer with personal details and registration date.
 /// </summary>
-public class Customer 
+public class Customer
 {
     /// <summary>
     /// Unique identifier of the customer.

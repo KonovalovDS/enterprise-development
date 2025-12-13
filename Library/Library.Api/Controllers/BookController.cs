@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Library.Domain.Entities;
-using Library.Domain.Interfaces;
-using Library.Domain.Enums;
 using Library.Application.Contracts.BookDtos;
+using Library.Domain.Entities;
+using Library.Domain.Enums;
+using Library.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Library.Api.Controllers;
 
@@ -16,12 +17,12 @@ namespace Library.Api.Controllers;
 [Route("api/books")]
 public class BookController(
     IBookRepository bookRepository, 
-    IMapper mapper
-) : ControllerBase
+    IMapper mapper) : ControllerBase
 {
     /// <summary>
     /// Returns all books in the system.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<List<BookGetDto>>> GetAllBooks()
     {
@@ -34,6 +35,7 @@ public class BookController(
     /// Returns a book by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the book to return.</param>
+    [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BookGetDto>> GetBookById(int id)
     {
@@ -48,6 +50,7 @@ public class BookController(
     /// Deletes a book by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the book to delete.</param>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteBookById(int id)
     {
@@ -62,6 +65,7 @@ public class BookController(
     /// Creates a new book.
     /// </summary>
     /// <param name="newBookDto">The data of the book to create.</param>
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<BookGetDto>> CreateBook([FromBody] BookEditDto newBookDto)
     {
@@ -84,6 +88,7 @@ public class BookController(
     /// </summary>
     /// <param name="id">The ID of the book to update.</param>
     /// <param name="updatedBookDto">The updated book data.</param>
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateBook(int id, [FromBody] BookEditDto updatedBookDto)
     {

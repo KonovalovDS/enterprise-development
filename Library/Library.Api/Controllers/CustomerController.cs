@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using Library.Application.Contracts.CustomerDtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace Library.Api.Controllers;
 
@@ -12,15 +15,17 @@ namespace Library.Api.Controllers;
 /// <param name="customerRepository">Repository for accessing customer data.</param>
 /// <param name="mapper">Mapper for dtos and entities.</param>
 [ApiController]
+[Authorize]
 [Route("api/customers")]
 public class CustomerController(
     ICustomerRepository customerRepository,
-    IMapper mapper
-) : ControllerBase
+    IMapper mapper,
+    UserManager<ApplicationUser> userManager) : ControllerBase
 {
     /// <summary>
     /// Returns all customers.
     /// </summary>
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<CustomerGetDto>>> GetAllCustomers()
     {
@@ -33,11 +38,19 @@ public class CustomerController(
     /// Returns a customer by their unique ID.
     /// </summary>
     /// <param name="id">The ID of the customer to return.</param>
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CustomerGetDto>> GetCustomerById(int id)
     {
         var customer = await customerRepository.GetByIdAsync(id);
         if (customer == null) return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != id)
+            return Forbid();
 
         var customerDto = mapper.Map<CustomerGetDto>(customer);
         return Ok(customerDto);
@@ -47,11 +60,19 @@ public class CustomerController(
     /// Deletes a customer by their unique ID.
     /// </summary>
     /// <param name="id">The ID of the customer to delete.</param>
+    [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteCustomerById(int id)
     {
         var isExists = await customerRepository.ExistsById(id);
         if (!isExists) return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != id)
+            return Forbid();
 
         await customerRepository.DeleteAsync(id);
         return NoContent();
@@ -61,6 +82,7 @@ public class CustomerController(
     /// Creates a new customer.
     /// </summary>
     /// <param name="newCustomerDto">The data of the customer to create.</param>
+    [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<CustomerGetDto>> CreateCustomer([FromBody] CustomerEditDto newCustomerDto)
     {
@@ -78,6 +100,7 @@ public class CustomerController(
     /// </summary>
     /// <param name="id">The ID of the customer to update.</param>
     /// <param name="updatedCustomerDto">The updated customer data.</param>
+    [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateCustomer(int id, [FromBody] CustomerEditDto updatedCustomerDto)
     {

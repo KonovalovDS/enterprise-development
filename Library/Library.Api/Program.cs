@@ -4,6 +4,8 @@ using Library.Domain.Interfaces;
 using Library.Infrastructure.Persistence;
 using Library.Infrastructure.Repositories;
 using Library.Application.Contracts.Mappers;
+using Library.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,18 @@ builder.Services.AddCors(options =>
 });
 
 builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "DefaultConnection");
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6;
+})
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 builder.Services.AddAutoMapper(typeof(AppMappingProfile).Assembly);
 
@@ -36,11 +50,18 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<AppDbContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
     db.Database.Migrate();
+
     await DbSeeder.SeedBooksAsync(db);
     await DbSeeder.SeedCustomersAsync(db);
     await DbSeeder.SeedBorrowRecordsAsync(db);
+
+    await DbSeeder.SeedUsersAndRolesAsync(db, userManager, roleManager);
 }
 
 if (app.Environment.IsDevelopment())
@@ -52,6 +73,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapDefaultEndpoints();
 app.MapControllers();

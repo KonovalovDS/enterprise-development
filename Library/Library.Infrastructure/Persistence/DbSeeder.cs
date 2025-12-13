@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Library.Domain.DataSeeders;
+using Library.Domain.Entities;
+using Library.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace Library.Infrastructure.Persistence;
 
@@ -58,5 +61,51 @@ public static class DbSeeder
         await context.Database.ExecuteSqlRawAsync(
             @"SELECT setval(pg_get_serial_sequence('""BorrowRecords""', 'Id'), (SELECT MAX(""Id"") FROM ""BorrowRecords""));"
         );
+    }
+
+    public static async Task SeedUsersAndRolesAsync(
+        AppDbContext context,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole> roleManager)
+    {
+        var roles = Enum.GetNames(typeof(UserRole));
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+                await roleManager.CreateAsync(new IdentityRole(role));
+        }
+
+        var adminEmail = "admin@library.com";
+        var admin = await userManager.FindByEmailAsync(adminEmail);
+        if (admin == null)
+        {
+            admin = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+            await userManager.CreateAsync(admin, "Password123!");
+            await userManager.AddToRoleAsync(admin, UserRole.Admin.ToString());
+        }
+
+        var customers = context.Customers.ToList();
+        foreach (var customer in customers)
+        {
+            var userEmail = $"{customer.Name.Replace(" ", "").ToLower()}@library.com";
+            var user = await userManager.FindByEmailAsync(userEmail);
+            if (user == null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = userEmail,
+                    Email = userEmail,
+                    EmailConfirmed = true,
+                    CustomerId = customer.Id
+                };
+                await userManager.CreateAsync(user, "UserPassword123!");
+                await userManager.AddToRoleAsync(user, UserRole.User.ToString());
+            }
+        }
     }
 }

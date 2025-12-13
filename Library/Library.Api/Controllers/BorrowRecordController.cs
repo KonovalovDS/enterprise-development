@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using Library.Application.Contracts.BorrowRecordDtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace Library.Api.Controllers;
 
@@ -14,17 +17,19 @@ namespace Library.Api.Controllers;
 /// <param name="customerRepository">Repository for accessing customers.</param>
 /// <param name="mapper">Mapper for dtos and entities.</param>
 [ApiController]
+[Authorize]
 [Route("api/records")]
 public class BorrowRecordController(
     IBorrowRecordRepository borrowRecordRepository,
     IBookRepository bookRepository,
     ICustomerRepository customerRepository,
-    IMapper mapper
-) : ControllerBase
+    IMapper mapper,
+    UserManager<ApplicationUser> userManager) : ControllerBase
 {
     /// <summary>
     /// Returns all borrow records.
     /// </summary>
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<BorrowRecordGetDto>>> GetAllRecords()
     {
@@ -37,12 +42,20 @@ public class BorrowRecordController(
     /// Returns a borrow record by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the borrow record to return.</param>
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BorrowRecordGetDto>> GetRecordById(int id)
     {
         var record = await borrowRecordRepository.GetByIdAsync(id);
         if (record == null)
             return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != record.CustomerId)
+            return Forbid();
 
         var book = await bookRepository.GetByIdAsync(record.BookId);
         var customer = await customerRepository.GetByIdAsync(record.CustomerId);
@@ -57,11 +70,20 @@ public class BorrowRecordController(
     /// Deletes a borrow record by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the borrow record to delete.</param>
+    [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteRecordById(int id)
     {
-        var isExists = await borrowRecordRepository.ExistsById(id);
-        if (!isExists) return NotFound();
+        var record = await borrowRecordRepository.GetByIdAsync(id);
+        if (record == null)
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != record.CustomerId)
+            return Forbid();
 
         await borrowRecordRepository.DeleteAsync(id);
         return NoContent();
@@ -71,10 +93,18 @@ public class BorrowRecordController(
     /// Creates a new borrow record.
     /// </summary>
     /// <param name="newRecordDto">The data for the new borrow record.</param>
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<BorrowRecordGetDto>> CreateRecord([FromBody] BorrowRecordEditDto newRecordDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != newRecordDto.CustomerId)
+            return Forbid();
 
         var isBookExists = await bookRepository.ExistsById(newRecordDto.BookId);
         var isCustomerExists = await customerRepository.ExistsById(newRecordDto.CustomerId);
@@ -93,18 +123,27 @@ public class BorrowRecordController(
     /// </summary>
     /// <param name="id">The ID of the borrow record to update.</param>
     /// <param name="updatedRecordDto">The updated borrow record data.</param>
+    [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateRecord(int id, [FromBody] BorrowRecordEditDto updatedRecordDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
+        var record = await borrowRecordRepository.GetByIdAsync(id);
+        if (record == null)
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != record.CustomerId)
+            return Forbid();
+
         var isBookExists = await bookRepository.ExistsById(updatedRecordDto.BookId);
         var isCustomerExists = await customerRepository.ExistsById(updatedRecordDto.CustomerId);
-
-        if (!isBookExists || !isCustomerExists) return NotFound();
-
-        var record = await borrowRecordRepository.GetByIdAsync(id);
-        if (record == null) return NotFound();
+        if (!isBookExists || !isCustomerExists)
+            return NotFound();
 
         var updatedRecord = mapper.Map<BorrowRecord>(updatedRecordDto);
         updatedRecord.Id = record.Id;
