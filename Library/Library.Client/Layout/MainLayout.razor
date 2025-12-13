@@ -5,14 +5,78 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
     <div class="container">
         <a class="navbar-brand" href="/">Library</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="/books">Книги</a></li>
-                <li class="nav-item"><a class="nav-link" href="/customers">Клиенты</a></li>
-                <li class="nav-item"><a class="nav-link" href="/records">Аренда</a></li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/books">
+                        Книги
+                    </NavLink>
+                </li>
+
+                <AuthorizeView>
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="/records">
+                            Аренда
+                        </NavLink>
+                    </li>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="Admin">
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="/customers">
+                            Клиенты
+                        </NavLink>
+                    </li>
+                </AuthorizeView>
+
+            </ul>
+
+            <ul class="navbar-nav">
+
+                <AuthorizeView>
+                    <Authorized Context="auth">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown">
+                                @auth.User.Identity?.Name
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <NavLink class="dropdown-item" href="/profile">
+                                        Профиль
+                                    </NavLink>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <NavLink class="dropdown-item" href="/logout">
+                                        Выйти
+                                    </NavLink>
+                                </li>
+                            </ul>
+                        </li>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/login">
+                                Войти
+                            </NavLink>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
+
             </ul>
         </div>
     </div>

@@ -1,8 +1,11 @@
 ﻿@page "/books/edit/{Id:int}"
+@attribute [Authorize(Roles = "Admin")]
+
 @using Library.Client.Models.BookDtos
 @using Library.Client.Models.Interfaces
 @using Library.Client.Components.Common
 @using Library.Client.Components.Books
+
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject NavigationManager Navigation
 

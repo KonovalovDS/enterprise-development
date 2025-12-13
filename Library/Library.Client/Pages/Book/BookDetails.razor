@@ -17,8 +17,10 @@ else
 {
     <BookDetailsView Book="book">
         <Actions>
-            <button class="btn btn-primary" @onclick="() => EditBook(book.Id)">Редактировать</button>
-            <button class="btn btn-danger" @onclick="DeleteBook">Удалить</button>
+            <AuthorizeView Roles="Admin">
+                <button class="btn btn-primary" @onclick="() => EditBook(book.Id)">Редактировать</button>
+                <button class="btn btn-danger" @onclick="DeleteBook">Удалить</button>
+            </AuthorizeView>
             <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
         </Actions>
     </BookDetailsView>

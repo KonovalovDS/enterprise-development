@@ -1,8 +1,11 @@
 ﻿@page "/customers"
+@attribute [Authorize(Roles = "Admin")]
+
 @using Library.Client.Models.CustomerDtos
 @using Library.Client.Models.Interfaces
 @using Library.Client.Components.Common
 @using Library.Client.Components.Customers
+
 @inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
 @inject NavigationManager Navigation
 

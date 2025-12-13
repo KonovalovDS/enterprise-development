@@ -63,6 +63,13 @@ public static class DbSeeder
         );
     }
 
+    /// <summary>
+    /// Seeds the database with initial users and roles for the application.
+    /// Creates roles from the <see cref="UserRole"/> enum, an admin user, and a normal users.
+    /// </summary>
+    /// <param name="context">The database context used for seeding additional entities if needed.</param>
+    /// <param name="userManager">The UserManager service for managing users.</param>
+    /// <param name="roleManager">The RoleManager service for managing roles.</param>
     public static async Task SeedUsersAndRolesAsync(
         AppDbContext context,
         UserManager<ApplicationUser> userManager,
