@@ -3,8 +3,8 @@
 
 @using Library.Client.Models.BookDtos
 @using Library.Client.Models.Interfaces
-@using Library.Client.Components.Common
 @using Library.Client.Components.Books
+@using Library.Client.Components.Common
 
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject NavigationManager Navigation
@@ -26,9 +26,8 @@ else
 }
 
 @code {
-    private BookEditDto? book;
-
     [Parameter] public int Id { get; set; }
+    private BookEditDto? book;
 
     protected override async Task OnInitializedAsync()
     {

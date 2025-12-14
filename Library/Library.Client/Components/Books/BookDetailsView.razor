@@ -1,16 +1,16 @@
 ﻿@using Library.Client.Models.BookDtos
 
-<div class="card book-details-card mx-auto">
+<div class="card book-details-card mx-auto" style="max-width: 600px;">
     <BookCover />
 
-    <div class="book-info flex-grow-1">
+    <div class="card-body">
         <BookField Label="Название" Value="@Book.Title" />
         <BookField Label="Автор" Value="@Book.Author" />
         <BookField Label="Издательство" Value="@Book.Publisher" />
         <BookField Label="Тип публикации" Value="@Book.PublishingType" />
         <BookField Label="Год публикации" Value="@Book.PublicationYear.ToString()" />
 
-        <div class="mt-3 d-flex gap-2 justify-content-end">
+        <div class="mt-3 d-flex justify-content-end gap-2">
             @Actions
         </div>
     </div>

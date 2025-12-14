@@ -1,4 +1,5 @@
 ﻿using Library.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Library.Domain.Interfaces;
 
@@ -11,6 +12,8 @@ public interface IBorrowRecordRepository
     /// Returns all borrow records.
     /// </summary>
     public Task<IEnumerable<BorrowRecord>> GetAllAsync();
+
+    public Task<IEnumerable<BorrowRecord>> GetAllAsync(Expression<Func<BorrowRecord, bool>>? predicate = null);
 
     /// <summary>
     /// Returns a borrow record by its unique identifier.

@@ -6,4 +6,10 @@
 @code {
     [Parameter] public string SearchTerm { get; set; } = "";
     [Parameter] public EventCallback<string> SearchTermChanged { get; set; }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        SearchTerm = e.Value?.ToString() ?? "";
+        await SearchTermChanged.InvokeAsync(SearchTerm);
+    }
 }

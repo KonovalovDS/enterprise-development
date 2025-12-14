@@ -1,12 +1,45 @@
-﻿<div class="mb-3">
+﻿@typeparam T
+
+<div class="mb-3">
     <label class="form-label">@Label</label>
-    <input class="form-control"
-           type="@Type"
-           @bind="Value" />
+    @if (typeof(T) == typeof(int))
+    {
+        <input type="number" class="form-control" @bind="ValueAsInt" />
+    }
+    else
+    {
+        <input type="text" class="form-control" @bind="ValueAsString" />
+    }
 </div>
 
 @code {
     [Parameter] public string Label { get; set; } = "";
-    [Parameter] public string Type { get; set; } = "text";
-    [Parameter] public object? Value { get; set; }
+    [Parameter] public T Value { get; set; } = default!;
+    [Parameter] public EventCallback<T> ValueChanged { get; set; }
+
+    private string ValueAsString
+    {
+        get => Value?.ToString() ?? "";
+        set
+        {
+            if (typeof(T) == typeof(string))
+            {
+                Value = (T)(object)(value ?? "");
+                ValueChanged.InvokeAsync(Value);
+            }
+        }
+    }
+
+    private int ValueAsInt
+    {
+        get => Value is int v ? v : 0;
+        set
+        {
+            if (typeof(T) == typeof(int))
+            {
+                Value = (T)(object)value;
+                ValueChanged.InvokeAsync(Value);
+            }
+        }
+    }
 }

@@ -1,8 +1,8 @@
 ﻿@using Library.Client.Models.CustomerDtos
 @using Library.Client.Components.Books
 
-<div class="card customer-details-card mx-auto mb-4">
-    <div class="book-info flex-grow-1">
+<div class="card customer-details-card mx-auto mb-4" style="max-width:600px;">
+    <div class="card-body">
         <BookField Label="Имя" Value="@Customer.Name" />
         <BookField Label="Телефон" Value="@Customer.PhoneNumber" />
         <BookField Label="Адрес" Value="@Customer.Address" />

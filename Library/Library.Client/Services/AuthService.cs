@@ -1,4 +1,5 @@
 ﻿using Library.Client.Models.AuthDtos;
+using Library.Client.Models.CustomerDtos;
 using Library.Client.Models.Interfaces;
 using System.Net.Http.Json;
 
@@ -36,4 +37,17 @@ public class AuthService(IHttpClientFactory httpFactory, ITokenStorage tokenStor
 
     public Task LogoutAsync() => tokenStorage.RemoveTokenAsync();
     public Task<string?> GetTokenAsync() => tokenStorage.GetTokenAsync();
+
+    public async Task<CustomerGetDto?> GetMyProfileAsync()
+    {
+        try
+        {
+            var profile = await _http.GetFromJsonAsync<CustomerGetDto>("api/auth/profile");
+            return profile;
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+    }
 }

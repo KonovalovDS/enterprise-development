@@ -171,4 +171,27 @@ public class BorrowRecordController(
         await borrowRecordRepository.UpdateAsync(updatedRecord);
         return NoContent();
     }
+
+    /// <summary>
+    /// Returns borrow records for the current user.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize]
+    [HttpGet("my-records")]
+    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetMyRecords()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user?.CustomerId == null)
+            return Forbid();
+
+        var records = await borrowRecordRepository.GetAllAsync(r => r.CustomerId == user.CustomerId.Value);
+        var recordsDto = mapper.Map<List<BorrowRecordGetDto>>(records);
+
+        return Ok(recordsDto);
+    }
 }

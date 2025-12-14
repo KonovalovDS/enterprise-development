@@ -2,8 +2,10 @@
 
 @using Library.Client.Models.BookDtos
 @using Library.Client.Models.Interfaces
-@using Library.Client.Components.Common
 @using Library.Client.Components.Books
+@using Library.Client.Components.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
 
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject NavigationManager Navigation
@@ -23,15 +25,17 @@ else
                 <button class="btn btn-primary" @onclick="() => EditBook(book.Id)">Редактировать</button>
                 <button class="btn btn-danger" @onclick="DeleteBook">Удалить</button>
             </AuthorizeView>
+            <button class="btn btn-success" @onclick="BorrowBook">Забронировать</button>
             <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
         </Actions>
     </BookDetailsView>
 }
 
 @code {
+    [Parameter] public int Id { get; set; }
     private BookGetDto? book;
 
-    [Parameter] public int Id { get; set; }
+    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,6 +43,7 @@ else
     }
 
     private void GoBack() => Navigation.NavigateTo("/books");
+
     private void EditBook(int id) => Navigation.NavigateTo($"/books/edit/{id}");
 
     private async Task DeleteBook()
@@ -48,6 +53,24 @@ else
         {
             await BookService.DeleteAsync(book.Id);
             Navigation.NavigateTo("/books");
+        }
+    }
+
+    private async Task BorrowBook()
+    {
+        if (book == null)
+            return;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            Navigation.NavigateTo($"/login?returnUrl=/records/create?bookId={book.Id}");
+        }
+        else
+        {
+            Navigation.NavigateTo($"/records/create?bookId={book.Id}");
         }
     }
 }

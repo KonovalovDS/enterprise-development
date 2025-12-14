@@ -1,10 +1,13 @@
-﻿using Library.Application.Contracts.AuthDtos;
+﻿using AutoMapper;
+using Library.Application.Contracts.AuthDtos;
+using Library.Application.Contracts.CustomerDtos;
 using Library.Application.Services;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Library.Api.Controllers;
 
@@ -14,7 +17,8 @@ public class AuthController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
     ICustomerRepository customerRepository,
-    JwtTokenService jwtTokenService) : ControllerBase
+    JwtTokenService jwtTokenService,
+    IMapper mapper) : ControllerBase
 {
     /// <summary>
     /// Registers a new user and creates related customer.
@@ -74,5 +78,23 @@ public class AuthController(
         var token = await jwtTokenService.GenerateTokenAsync(user);
 
         return Ok(new AuthResponseDto { Token = token });
+    }
+
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<ActionResult<CustomerGetDto>> GetMyProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (user?.CustomerId == null)
+            return Forbid();
+
+        var customer = await customerRepository.GetByIdAsync(user.CustomerId.Value);
+        if (customer == null)
+            return NotFound();
+
+        var customerDto = mapper.Map<CustomerGetDto>(customer);
+        return Ok(customerDto);
     }
 }

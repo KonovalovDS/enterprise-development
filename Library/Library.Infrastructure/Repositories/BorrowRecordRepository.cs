@@ -2,6 +2,8 @@
 using Library.Domain.Interfaces;
 using Library.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Linq;
 
 namespace Library.Infrastructure.Repositories;
 
@@ -17,6 +19,14 @@ public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordReposit
     /// </summary>
     public async Task<IEnumerable<BorrowRecord>> GetAllAsync() => 
         await context.BorrowRecords.ToListAsync();
+
+    public async Task<IEnumerable<BorrowRecord>> GetAllAsync(Expression<Func<BorrowRecord, bool>>? predicate = null)
+    {
+        var query = context.BorrowRecords.AsQueryable();
+        if (predicate != null)
+            query = query.Where(predicate);
+        return await query.ToListAsync();
+    }
 
     /// <summary>
     /// Gets a borrow record by its ID.

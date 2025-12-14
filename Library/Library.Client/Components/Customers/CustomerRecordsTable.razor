@@ -1,7 +1,7 @@
 ﻿@using Library.Client.Models.BorrowRecordDtos
 @using Library.Client.Models.BookDtos
 
-@if (!Records.Any())
+@if (Records == null || !Records.Any())
 {
     <p>Заказов нет.</p>
 }
@@ -13,6 +13,7 @@ else
                 <th>Книга</th>
                 <th>Дата аренды</th>
                 <th>Срок (дней)</th>
+                <th>Статус</th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -20,14 +21,13 @@ else
             @foreach (var record in Records)
             {
                 var book = Books.FirstOrDefault(b => b.Id == record.BookId);
-                var isActive =
-                record.BorrowDate.AddDays(record.BorrowDuration)
-                >= DateOnly.FromDateTime(DateTime.Today);
+                var isActive = record.BorrowDate.AddDays(record.BorrowDuration) >= DateOnly.FromDateTime(DateTime.Today);
 
                 <tr class="@(isActive ? "record-active" : "")">
                     <td>@(book?.Title ?? "—")</td>
                     <td>@record.BorrowDate.ToString("yyyy-MM-dd")</td>
                     <td>@record.BorrowDuration</td>
+                    <td>@(isActive ? "Активна" : "Завершена")</td>
                     <td>
                         <button class="btn btn-primary btn-sm me-1"
                                 @onclick="() => OnView.InvokeAsync(record.Id)">

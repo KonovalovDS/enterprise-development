@@ -1,4 +1,4 @@
-﻿@page "/customers/edit/{Id:int}"
+﻿@page "/customers/edit/{Id:int?}"
 @attribute [Authorize]
 
 @using Library.Client.Models.CustomerDtos
@@ -6,8 +6,9 @@
 @using Library.Client.Components.Common
 @using Library.Client.Components.Customers
 
-@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
 
 <h2 class="mb-4 text-center">Редактирование клиента</h2>
 
@@ -26,9 +27,9 @@ else
 }
 
 @code {
-    private CustomerEditDto? customer;
-
     [Parameter] public int Id { get; set; }
+
+    private CustomerEditDto? customer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,11 +37,11 @@ else
         if (data != null)
         {
             customer = new CustomerEditDto
-            {
-                Name = data.Name,
-                PhoneNumber = data.PhoneNumber,
-                Address = data.Address
-            };
+                {
+                    Name = data.Name,
+                    PhoneNumber = data.PhoneNumber,
+                    Address = data.Address
+                };
         }
     }
 
