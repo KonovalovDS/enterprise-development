@@ -1,6 +1,16 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+var keyBytes = RandomNumberGenerator.GetBytes(32);
+var keyBase64 = Convert.ToBase64String(keyBytes);
+
+var jwtSecret = builder.AddParameter(
+    "JwtSettingsSecretKey",
+    value: keyBase64,
+    secret: true
+);
 
 var postgres = builder.AddPostgres("PostgreSQL");
 
@@ -8,6 +18,9 @@ var postgresDb = postgres.AddDatabase("LibraryDB");
 
 var api = builder.AddProject<Projects.Library_Api>("LibraryApi")
     .WithReference(postgresDb, "DefaultConnection")
+    .WithEnvironment("JwtSettingsIssuer", "Library.Api")
+    .WithEnvironment("JwtSettingsAudience", "Library.Client")
+    .WithEnvironment("JwtSettingsSecretKey", jwtSecret)
     .WaitFor(postgresDb);
 
 var username = builder.AddParameter("username", secret: true);

@@ -1,0 +1,21 @@
+﻿@page "/logout"
+
+@using Library.Client.Models.Interfaces
+@using Library.Client.Services
+
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h3>Выход...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.LogoutAsync();
+        if (AuthStateProvider is ApiAuthenticationStateProvider apiProvider)
+            apiProvider.NotifyUserLogout();
+
+        Navigation.NavigateTo("/");
+    }
+}

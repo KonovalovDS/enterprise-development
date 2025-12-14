@@ -1,0 +1,57 @@
+﻿@page "/login"
+
+@using Library.Client.Models.Interfaces
+@using Library.Client.Services
+@using Library.Client.Models.AuthDtos
+
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h3>Вход</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="loginModel.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>Пароль</label>
+        <InputText class="form-control" type="password" @bind-Value="loginModel.Password" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Войти</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-2">@errorMessage</div>
+}
+
+@code {
+    private LoginDto loginModel = new LoginDto
+    {
+        Email = string.Empty,
+        Password = string.Empty
+    };
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var result = await AuthService.LoginAsync(loginModel);
+        if (result is null)
+        {
+            errorMessage = "Invalid Email or Password";
+            return;
+        }
+
+        if (AuthStateProvider is ApiAuthenticationStateProvider apiProvider)
+            apiProvider.NotifyUserAuthentication();
+
+        Navigation.NavigateTo("/");
+    }
+}

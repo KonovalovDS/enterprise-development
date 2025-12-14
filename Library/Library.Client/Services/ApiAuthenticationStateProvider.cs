@@ -1,32 +1,26 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using Library.Client.Models.Interfaces;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Library.Client.Services;
 
-public class ApiAuthenticationStateProvider : AuthenticationStateProvider
+public class ApiAuthenticationStateProvider(ITokenStorage tokenStorage) : AuthenticationStateProvider
 {
-    private readonly ClaimsPrincipal _anonymous =
-        new(new ClaimsIdentity());
-
-    private ClaimsPrincipal _currentUser =
-        new(new ClaimsIdentity());
-
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        return Task.FromResult(new AuthenticationState(_currentUser));
+        var token = await tokenStorage.GetTokenAsync();
+        if (string.IsNullOrWhiteSpace(token))
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+        var claims = jwt.Claims;
+        var identity = new ClaimsIdentity(claims, "jwt");
+
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    public void SetUser(ClaimsPrincipal user)
-    {
-        _currentUser = user;
-        NotifyAuthenticationStateChanged(
-            Task.FromResult(new AuthenticationState(user)));
-    }
-
-    public void SetAnonymous()
-    {
-        _currentUser = _anonymous;
-        NotifyAuthenticationStateChanged(
-            Task.FromResult(new AuthenticationState(_anonymous)));
-    }
+    public void NotifyUserAuthentication() => NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+    public void NotifyUserLogout() => NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
 }

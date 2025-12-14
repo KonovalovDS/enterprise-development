@@ -1,7 +1,8 @@
 ﻿using Library.Application.Contracts.AuthDtos;
+using Library.Application.Services;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
-using Library.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,17 +13,22 @@ namespace Library.Api.Controllers;
 public class AuthController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    ICustomerRepository customerRepository) : ControllerBase
+    ICustomerRepository customerRepository,
+    JwtTokenService jwtTokenService) : ControllerBase
 {
+    /// <summary>
+    /// Registers a new user and creates related customer.
+    /// </summary>
+    [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         var existingUser = await userManager.FindByEmailAsync(dto.Email);
         if (existingUser != null)
-            return BadRequest("Email уже зарегистрирован.");
+            return BadRequest("Email already in use.");
 
         var customer = new Customer
         {
@@ -31,6 +37,7 @@ public class AuthController(
             PhoneNumber = dto.CustomerDto.PhoneNumber,
             RegisterDate = DateOnly.FromDateTime(DateTime.Today)
         };
+
         await customerRepository.AddAsync(customer);
 
         var user = new ApplicationUser
@@ -39,27 +46,33 @@ public class AuthController(
             Email = dto.Email,
             CustomerId = customer.Id
         };
-        var result = await userManager.CreateAsync(user, dto.Password);
 
+        var result = await userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
         await userManager.AddToRoleAsync(user, "User");
-
-        return Ok(new { Message = "Регистрация прошла успешно" });
+        var token = await jwtTokenService.GenerateTokenAsync(user);
+        return Ok(new AuthResponseDto { Token = token });
     }
 
+    /// <summary>
+    /// Authenticates user and returns JWT token.
+    /// </summary>
+    [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
         if (user == null)
-            return Unauthorized("Неверный Email или пароль");
+            return Unauthorized("Invalid Email or Password");
 
         var result = await signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
         if (!result.Succeeded)
-            return Unauthorized("Неверный Email или пароль");
+            return Unauthorized("Invalid Email or Password");
 
-        return Ok(new { Message = "Успешный вход" });
+        var token = await jwtTokenService.GenerateTokenAsync(user);
+
+        return Ok(new AuthResponseDto { Token = token });
     }
 }

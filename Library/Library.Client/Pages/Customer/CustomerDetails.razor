@@ -24,8 +24,10 @@ else
 {
     <CustomerDetailsView Customer="customer">
         <Actions>
-            <button class="btn btn-primary" @onclick="() => EditCustomer(customer.Id)">Редактировать</button>
-            <button class="btn btn-danger" @onclick="DeleteCustomer">Удалить</button>
+            <AuthorizeView Roles="Admin">
+                <button class="btn btn-primary" @onclick="() => EditCustomer(customer.Id)">Редактировать</button>
+                <button class="btn btn-danger" @onclick="DeleteCustomer">Удалить</button>
+            </AuthorizeView>
             <button class="btn btn-secondary" @onclick="GoBack">Назад</button>
         </Actions>
     </CustomerDetailsView>

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
 
@@ -35,7 +36,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKeyBase64 = Environment.GetEnvironmentVariable("JwtSettingsSecretKey")
+                      ?? throw new InvalidOperationException("JWT SecretKey not found");
+var secretKeyBytes = Convert.FromBase64String(secretKeyBase64);
+
+var issuer = Environment.GetEnvironmentVariable("JwtSettingsIssuer")!;
+var audience = Environment.GetEnvironmentVariable("JwtSettingsAudience")!;
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -43,19 +50,18 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!))
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes)
     };
 });
 
-builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 builder.Services.AddAutoMapper(typeof(AppMappingProfile).Assembly);
@@ -65,11 +71,7 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
 
 builder.Services.AddScoped<AnalyticsService>();
-builder.Services.AddScoped<JwtTokenService>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    return new JwtTokenService(config["JwtSettings:SecretKey"]);
-});
+builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -82,6 +84,31 @@ builder.Services.AddSwaggerGen(c =>
     var contractsXml = Path.Combine(AppContext.BaseDirectory, "Library.Application.Contracts.xml");
     if (File.Exists(contractsXml))
         c.IncludeXmlComments(contractsXml);
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "¬ведите JWT токен"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 var app = builder.Build();

@@ -12,26 +12,34 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7154/") });
+builder.Services.AddScoped<ITokenStorage, TokenStorage>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthorizedHttpClientHandler>();
+
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7154/");
+}).AddHttpMessageHandler<AuthorizedHttpClientHandler>();
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
 
 builder.Services.AddScoped<IBaseApiService<BookGetDto, BookEditDto>>(sp =>
     new BaseApiService<BookGetDto, BookEditDto>(
-        sp.GetRequiredService<HttpClient>(),
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
         "books"
     ));
 builder.Services.AddScoped<IBaseApiService<CustomerGetDto, CustomerEditDto>>(sp =>
     new BaseApiService<CustomerGetDto, CustomerEditDto>(
-        sp.GetRequiredService<HttpClient>(),
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
         "customers"
     ));
 builder.Services.AddScoped<IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto>>(sp =>
     new BaseApiService<BorrowRecordGetDto, BorrowRecordEditDto>(
-        sp.GetRequiredService<HttpClient>(),
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
         "records"
     ));
 
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthService>();
 
 await builder.Build().RunAsync();

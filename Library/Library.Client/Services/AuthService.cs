@@ -1,40 +1,39 @@
-﻿using Library.Client.Models.ClaimDtos;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Library.Client.Models.AuthDtos;
+using Library.Client.Models.Interfaces;
 using System.Net.Http.Json;
-using System.Security.Claims;
 
 namespace Library.Client.Services;
 
-public class AuthService(
-    HttpClient http,
-    AuthenticationStateProvider authStateProvider)
+public class AuthService(IHttpClientFactory httpFactory, ITokenStorage tokenStorage) : IAuthService
 {
-    private readonly ApiAuthenticationStateProvider _authStateProvider = (ApiAuthenticationStateProvider)authStateProvider;
+    private readonly HttpClient _http = httpFactory.CreateClient("ApiClient");
 
-    public async Task<bool> LoginAsync(string email, string password)
+    public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
     {
-        var response = await http.PostAsJsonAsync(
-            "api/auth/login",
-            new { email, password });
+        var resp = await _http.PostAsJsonAsync("api/auth/login", dto);
+        if (!resp.IsSuccessStatusCode)
+            return null;
 
-        if (!response.IsSuccessStatusCode)
-            return false;
+        var result = await resp.Content.ReadFromJsonAsync<AuthResponseDto>();
+        if (result != null)
+            await tokenStorage.SetTokenAsync(result.Token);
 
-        var claims = await response.Content
-            .ReadFromJsonAsync<List<ClaimDto>>();
-
-        var identity = new ClaimsIdentity(
-            claims.Select(c => new Claim(c.Type, c.Value)),
-            "apiauth");
-
-        _authStateProvider.SetUser(
-            new ClaimsPrincipal(identity));
-
-        return true;
+        return result;
     }
 
-    public void Logout()
+    public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
     {
-        _authStateProvider.SetAnonymous();
+        var resp = await _http.PostAsJsonAsync("api/auth/register", dto);
+        if (!resp.IsSuccessStatusCode)
+            return null;
+
+        var result = await resp.Content.ReadFromJsonAsync<AuthResponseDto>();
+        if (result != null)
+            await tokenStorage.SetTokenAsync(result.Token);
+
+        return result;
     }
+
+    public Task LogoutAsync() => tokenStorage.RemoveTokenAsync();
+    public Task<string?> GetTokenAsync() => tokenStorage.GetTokenAsync();
 }

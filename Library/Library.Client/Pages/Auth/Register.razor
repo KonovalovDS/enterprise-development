@@ -1,0 +1,75 @@
+﻿@page "/register"
+
+@using Library.Client.Models.Interfaces
+@using Library.Client.Services
+@using Library.Client.Models.AuthDtos
+@using Library.Client.Models.CustomerDtos
+
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h3>Регистрация</h3>
+
+<EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="registerModel.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>Пароль</label>
+        <InputText class="form-control" type="password" @bind-Value="registerModel.Password" />
+    </div>
+
+    <div class="mb-3">
+        <label>Адрес</label>
+        <InputText class="form-control" @bind-Value="registerModel.CustomerDto.Address" />
+    </div>
+
+    <div class="mb-3">
+        <label>Телефон</label>
+        <InputText class="form-control" @bind-Value="registerModel.CustomerDto.PhoneNumber" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-2">@errorMessage</div>
+}
+
+@code {
+    private RegisterDto registerModel = new RegisterDto
+        {
+            Email = string.Empty,
+            Password = string.Empty,
+            CustomerDto = new CustomerEditDto
+            {
+                Name = string.Empty,
+                Address = string.Empty,
+                PhoneNumber = string.Empty
+            }
+        };
+
+    private string? errorMessage;
+
+    private async Task HandleRegister()
+    {
+        var result = await AuthService.RegisterAsync(registerModel);
+        if (result is null)
+        {
+            errorMessage = "Register error.";
+            return;
+        }
+
+        if (AuthStateProvider is ApiAuthenticationStateProvider apiProvider)
+            apiProvider.NotifyUserAuthentication();
+
+        Navigation.NavigateTo("/");
+    }
+}

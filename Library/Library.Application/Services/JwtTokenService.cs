@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace Library.Application.Services;
 
@@ -28,12 +27,14 @@ public class JwtTokenService(
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]));
+        var keyBase64 = Environment.GetEnvironmentVariable("JwtSettingsSecretKey")!;
+        var keyBytes = Convert.FromBase64String(keyBase64);
+        var key = new SymmetricSecurityKey(keyBytes);
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: configuration["JwtSettings:Issuer"],
-            audience: configuration["JwtSettings:Audience"],
+            issuer: Environment.GetEnvironmentVariable("JwtSettingsIssuer"),
+            audience: Environment.GetEnvironmentVariable("JwtSettingsAudience"),
             claims: claims,
             expires: DateTime.UtcNow.AddHours(2),
             signingCredentials: creds
