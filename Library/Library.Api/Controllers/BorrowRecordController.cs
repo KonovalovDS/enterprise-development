@@ -33,13 +33,35 @@ public class BorrowRecordController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpGet]
-    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetAllRecords()
+    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetRecords()
     {
-        var records = await borrowRecordRepository.GetAllAsync();
-        var recordsDto = mapper.Map<List<BorrowRecordGetDto>>(records);
-        return Ok(recordsDto);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Unauthorized();
+
+        IEnumerable<BorrowRecord> records;
+
+        if (User.IsInRole("Admin"))
+        {
+            records = await borrowRecordRepository.GetAllAsync();
+        }
+        else
+        {
+            if (user.CustomerId == null)
+                return Forbid();
+
+            records = await borrowRecordRepository.GetAllAsync(
+                r => r.CustomerId == user.CustomerId.Value
+            );
+        }
+
+        return Ok(mapper.Map<List<BorrowRecordGetDto>>(records));
     }
 
     /// <summary>
@@ -177,6 +199,7 @@ public class BorrowRecordController(
     /// </summary>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize]
     [HttpGet("my-records")]
     public async Task<ActionResult<List<BorrowRecordGetDto>>> GetMyRecords()

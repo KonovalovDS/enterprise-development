@@ -33,12 +33,22 @@
 }
 
 @code {
+    private string? returnUrl;
     private LoginDto loginModel = new LoginDto
     {
         Email = string.Empty,
         Password = string.Empty
     };
     private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("returnUrl", out var url))
+            returnUrl = url;
+    }
 
     private async Task HandleLogin()
     {
@@ -52,6 +62,6 @@
         if (AuthStateProvider is ApiAuthenticationStateProvider apiProvider)
             apiProvider.NotifyUserAuthentication();
 
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo(returnUrl ?? "/", true);
     }
 }

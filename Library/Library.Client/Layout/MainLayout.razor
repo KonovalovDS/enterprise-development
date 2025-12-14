@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using Library.Client.Components.Common
+@inherits LayoutComponentBase
 
 <PageTitle>Library</PageTitle>
 
@@ -22,13 +23,11 @@
                     </NavLink>
                 </li>
 
-                <AuthorizeView>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="/records">
-                            Аренда
-                        </NavLink>
-                    </li>
-                </AuthorizeView>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/records">
+                        Аренда
+                    </NavLink>
+                </li>
 
                 <AuthorizeView Roles="Admin">
                     <li class="nav-item">
@@ -41,42 +40,9 @@
             </ul>
 
             <ul class="navbar-nav">
-
-                <AuthorizeView>
-                    <Authorized Context="auth">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle"
-                               href="#"
-                               role="button"
-                               data-bs-toggle="dropdown">
-                                @auth.User.Identity?.Name
-                            </a>
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <NavLink class="dropdown-item" href="/profile">
-                                        Профиль
-                                    </NavLink>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <NavLink class="dropdown-item" href="/logout">
-                                        Выйти
-                                    </NavLink>
-                                </li>
-                            </ul>
-                        </li>
-                    </Authorized>
-
-                    <NotAuthorized>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="/login">
-                                Войти
-                            </NavLink>
-                        </li>
-                    </NotAuthorized>
-                </AuthorizeView>
-
+                <li class="nav-item">
+                    <UserMenu />
+                </li>
             </ul>
         </div>
     </div>

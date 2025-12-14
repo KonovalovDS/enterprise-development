@@ -10,11 +10,13 @@
 @inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordService
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
 <h2 class="mb-4 text-center">Создание записи аренды</h2>
 
-@if (record == null || books == null || customers == null)
+@if (record == null || books == null || (IsAdmin && customers == null))
 {
     <div class="d-flex justify-content-center my-5">
         <div class="spinner-border text-primary"></div>
@@ -22,12 +24,13 @@
 }
 else
 {
-    <BorrowRecordForm
-        Model="record"
-        Books="books"
-        Customers="customers"
-        OnSave="Save"
-        OnCancel="GoBack" />
+    <BorrowRecordForm Model="record"
+                      Books="books"
+                      Customers="customers"
+                      IsAdmin="IsAdmin"
+                      CustomerName="CurrentUserName"
+                      OnSave="Save"
+                      OnCancel="GoBack" />
 }
 
 @code {
@@ -35,18 +38,30 @@ else
     private List<BookGetDto>? books;
     private List<CustomerGetDto>? customers;
 
+    private bool IsAdmin { get; set; } = false;
+    private int CurrentUserId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        record = new BorrowRecordEditDto
-        {
-            BookId = 0,
-            CustomerId = 0,
-            BorrowDate = DateOnly.FromDateTime(DateTime.Today),
-            BorrowDuration = 7
-        };
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        IsAdmin = user.IsInRole("Admin");
+        CurrentUserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         books = await BookService.GetAllAsync();
-        customers = await CustomerService.GetAllAsync();
+
+        if (IsAdmin)
+        {
+            customers = await CustomerService.GetAllAsync();
+        }
+
+        record = new BorrowRecordEditDto
+            {
+                BookId = 0,
+                CustomerId = IsAdmin ? 0 : CurrentUserId,
+                BorrowDate = DateOnly.FromDateTime(DateTime.Today),
+                BorrowDuration = 7
+            };
 
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
@@ -64,6 +79,11 @@ else
     {
         if (record != null)
         {
+            if (!IsAdmin)
+            {
+                record.CustomerId = CurrentUserId;
+            }
+
             await RecordService.CreateAsync(record);
             Navigation.NavigateTo("/records");
         }

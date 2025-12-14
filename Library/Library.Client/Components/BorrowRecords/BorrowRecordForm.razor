@@ -14,15 +14,25 @@
             </select>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Клиент</label>
-            <select class="form-select" @bind="Model.CustomerId">
-                @foreach (var c in Customers)
-                {
-                    <option value="@c.Id">@c.Name</option>
-                }
-            </select>
-        </div>
+        @if (IsAdmin)
+        {
+            <div class="mb-3">
+                <label class="form-label">Клиент</label>
+                <select class="form-select" @bind="Model.CustomerId">
+                    @foreach (var c in Customers!)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+            </div>
+        }
+        else
+        {
+            <div class="mb-3">
+                <label class="form-label">Клиент</label>
+                <input class="form-control" value="@CustomerName" disabled />
+            </div>
+        }
 
         <div class="mb-3">
             <label class="form-label">Дата аренды</label>
@@ -45,9 +55,12 @@
     [Parameter] public BorrowRecordEditDto Model { get; set; } = default!;
     [Parameter] public List<BookGetDto> Books { get; set; } = [];
     [Parameter] public List<CustomerGetDto> Customers { get; set; } = [];
+    [Parameter] public string CustomerName { get; set; } = string.Empty;
 
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+
+    [Parameter] public bool IsAdmin { get; set; } = false;
 
     private DateTime BorrowDateTemp
     {

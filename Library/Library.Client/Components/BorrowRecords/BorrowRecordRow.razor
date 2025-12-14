@@ -3,9 +3,13 @@
 @using Library.Client.Models.CustomerDtos
 
 <tr class="@(IsActive ? "record-active clickable-row" : "clickable-row")"
-    @onclick="() => OnSelect.InvokeAsync(Record.Id)">
+    @onclick="HandleClick">
+
     <td>@(Book?.Title ?? "—")</td>
-    <td>@(Customer?.Name ?? "—")</td>
+    @if (Customer != null)
+    {
+        <td>@Customer.Name</td>
+    }
     <td>@Record.BorrowDate.ToString("yyyy-MM-dd")</td>
     <td>@Record.BorrowDuration</td>
     <td>@(IsActive ? "Активна" : "Завершена")</td>
@@ -17,6 +21,12 @@
     [Parameter] public CustomerGetDto? Customer { get; set; }
 
     [Parameter] public EventCallback<int> OnSelect { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (OnSelect.HasDelegate)
+            await OnSelect.InvokeAsync(Record.Id);
+    }
 
     private bool IsActive =>
         Record.BorrowDate.AddDays(Record.BorrowDuration) >=

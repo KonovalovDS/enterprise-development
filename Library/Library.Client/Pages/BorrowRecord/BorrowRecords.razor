@@ -1,12 +1,15 @@
 ﻿@page "/records"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize]
 
+@using System.Security.Claims
 @using Library.Client.Models.BorrowRecordDtos
 @using Library.Client.Models.BookDtos
 @using Library.Client.Models.CustomerDtos
 @using Library.Client.Models.Interfaces
+@using Library.Client.Components.Common
 @using Library.Client.Components.BorrowRecords
 
+@inject AuthenticationStateProvider AuthStateProvider
 @inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordService
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
@@ -14,21 +17,37 @@
 
 <h2 class="mb-4 text-center">Аренды</h2>
 
-@if (records == null)
+@if (records == null || books == null || (isAdmin && customers == null))
 {
-    <div class="spinner-border text-primary"></div>
-}
-else if (!records.Any())
-{
-    <p class="text-center">Записей нет.</p>
+    <Loader />
 }
 else
 {
-    <BorrowRecordsTable
-        Records="records"
-        Books="books!"
-        Customers="customers!"
-        OnSelect="GoToDetails" />
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Книга</th>
+                @if (isAdmin)
+                {
+                    <th>Клиент</th>
+                }
+                <th>Дата аренды</th>
+                <th>Срок (дней)</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in records)
+            {
+                <BorrowRecordRow Record="record"
+                                 Book="books.FirstOrDefault(b => b.Id == record.BookId)"
+                                 Customer="isAdmin
+                                     ? customers!.FirstOrDefault(c => c.Id == record.CustomerId)
+                                     : null"
+                                 OnSelect="GoToRecord" />
+            }
+        </tbody>
+    </table>
 }
 
 @code {
@@ -36,13 +55,39 @@ else
     private List<BookGetDto>? books;
     private List<CustomerGetDto>? customers;
 
+    private bool isAdmin;
+
     protected override async Task OnInitializedAsync()
     {
-        records = await RecordService.GetAllAsync();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            Navigation.NavigateTo(
+                $"/login?returnUrl={Uri.EscapeDataString("/records")}",
+                forceLoad: true);
+
+            return;
+        }
+
+        isAdmin = user.IsInRole("Admin");
+
         books = await BookService.GetAllAsync();
-        customers = await CustomerService.GetAllAsync();
+
+        if (isAdmin)
+        {
+            records = await RecordService.GetAllAsync();
+            customers = await CustomerService.GetAllAsync();
+        }
+        else
+        {
+            records = await RecordService.GetAllAsync("api/records/my-records");
+        }
     }
 
-    private void GoToDetails(int id) =>
+    private void GoToRecord(int id)
+    {
         Navigation.NavigateTo($"/records/{id}");
+    }
 }

@@ -1,13 +1,12 @@
 ﻿@using Library.Client.Pages.Common
+@using Library.Client.Components.Common
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <LayoutView Layout="@typeof(MainLayout)">
-                        <p>У вас нет доступа к этой странице.</p>
-                    </LayoutView>
+                    <RedirectToLogin />
                 </NotAuthorized>
                 <Authorizing>
                     <LayoutView Layout="@typeof(MainLayout)">

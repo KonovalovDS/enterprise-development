@@ -15,19 +15,24 @@
 
 <h2 class="mb-4 text-center">Подробности аренды</h2>
 
-@if (record == null || book == null || customer == null)
+@if (record == null)
+{
+    <div class="alert alert-warning text-center my-3">
+        Запись не найдена.
+    </div>
+}
+else if (book == null || customer == null)
 {
     <div class="spinner-border text-primary"></div>
 }
 else
 {
-    <BorrowRecordDetailsCard
-        Record="record"
-        Book="book"
-        Customer="customer"
-        OnEdit="Edit"
-        OnDelete="Delete"
-        OnBack="Back" />
+    <BorrowRecordDetailsCard Record="record"
+                             Book="book"
+                             Customer="customer"
+                             OnEdit="Edit"
+                             OnDelete="Delete"
+                             OnBack="Back" />
 }
 
 @code {
