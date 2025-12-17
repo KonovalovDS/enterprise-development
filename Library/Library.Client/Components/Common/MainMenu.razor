@@ -1,0 +1,40 @@
+﻿@using Library.Client.Models.Interfaces
+@using Library.Client.Services
+
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
+
+<nav class="main-menu">
+    <div class="menu-left">
+        <div class="logo">Library</div>
+        <a href="/books">Книги</a>
+        <a href="/records">Мои заказы</a>
+        <AuthorizeView Roles="Admin">
+            <a href="/customers">Пользователи</a>
+        </AuthorizeView>
+    </div>
+    <div class="menu-right">
+        <AuthorizeView>
+            <Authorized>
+                <a href="#" @onclick="Logout">Выйти</a>
+            </Authorized>
+            <NotAuthorized>
+                <a href="/auth/login">Войти</a>
+                <a href="/auth/register">Регистрация</a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</nav>
+
+
+@code {
+    [Inject] IAuthService AuthService { get; set; } = default!;
+    [Inject] ApiAuthenticationStateProvider ApiAuthState { get; set; } = default!;
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        ApiAuthState.NotifyUserLogout();
+        Navigation.NavigateTo("/");
+    }
+}

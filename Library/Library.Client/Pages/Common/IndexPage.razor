@@ -1,0 +1,18 @@
+﻿@page "/"
+
+<div class="main-content">
+    <div class="content-area home-page">
+        <h1>Добро пожаловать в библиотеку!</h1>
+        <p>
+            Выберите книгу или войдите в аккаунт, чтобы пользоваться полным функционалом.
+        </p>
+        <button class="btn-primary" @onclick="GoToBooks">
+            Смотреть книги
+        </button>
+    </div>
+</div>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; } = default!;
+    private void GoToBooks() => Navigation.NavigateTo("/books");
+}

@@ -1,0 +1,77 @@
+﻿@page "/books"
+
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Filter
+@using Library.Client.Models.Interfaces
+@using Library.Client.Components.Books
+@using Library.Client.Components.Common
+
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+
+<div class="main-content">
+    @if (books is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="content-area content-wide flex-container">
+            <div class="filter-panel">
+                <BooksFilter OnFilterChanged="ApplyFilter" />
+            </div>
+            <div class="books-main">
+                @if (!filteredBooks.Any())
+                {
+                    <p>Книги не найдены.</p>
+                }
+                else
+                {
+                    <BooksGrid Books="filteredBooks" OnBookDeleted="DeleteBook" />
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<BookGetDto>? books;
+    private List<BookGetDto> filteredBooks = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await BookService.GetAllAsync();
+        filteredBooks = books;
+    }
+
+    private void ApplyFilter(FilterOptions options)
+    {
+        if (books is null)
+            return;
+
+        var query = books.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(options.SearchTerm))
+        {
+            string term = options.SearchTerm.Trim().ToLower();
+
+            query = query.Where(b =>
+                (b.Title?.ToLower().Contains(term) ?? false) ||
+                (b.Author?.ToLower().Contains(term) ?? false) ||
+                b.PublicationYear.ToString().Contains(term)
+            );
+        }
+
+        filteredBooks = options.SortOrder == "asc"
+            ? query.OrderBy(b => b.Title).ToList()
+            : query.OrderByDescending(b => b.Title).ToList();
+    }
+
+    private async Task DeleteBook(int id)
+    {
+        if (BookService is null)
+            return;
+        await BookService.DeleteAsync(id);
+        books = await BookService.GetAllAsync();
+        ApplyFilter(new FilterOptions { SearchTerm = null, SortOrder = "asc" });
+    }
+}

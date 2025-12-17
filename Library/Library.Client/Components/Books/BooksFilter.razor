@@ -1,0 +1,29 @@
+﻿@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Filter
+
+<div class="books-filter">
+    <input type="text" placeholder="Поиск книги, автора или года" @bind="SearchTerm" />
+    <select @bind="SortOrder">
+        <option value="asc">Название A-Z</option>
+        <option value="desc">Название Z-A</option>
+    </select>
+    <button class="btn-primary" @onclick="ApplyFilter">Применить</button>
+</div>
+
+@code {
+    [Parameter] public EventCallback<FilterOptions> OnFilterChanged { get; set; }
+
+    private string? SearchTerm { get; set; }
+    private string SortOrder { get; set; } = "asc";
+
+    private async Task ApplyFilter()
+    {
+        var options = new FilterOptions
+            {
+                SearchTerm = SearchTerm,
+                SortOrder = SortOrder
+            };
+
+        await OnFilterChanged.InvokeAsync(options);
+    }
+}

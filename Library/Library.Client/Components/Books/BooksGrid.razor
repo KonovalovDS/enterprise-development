@@ -1,0 +1,14 @@
+﻿@using Library.Client.Models.BookDtos
+@using Library.Client.Components.Books
+
+<div class="card-grid">
+    @foreach (var book in Books)
+    {
+        <BookCard Book="book" OnBookDeleted="OnBookDeleted" />
+    }
+</div>
+
+@code {
+    [Parameter] public List<BookGetDto> Books { get; set; } = new();
+    [Parameter] public EventCallback<int> OnBookDeleted { get; set; }
+}

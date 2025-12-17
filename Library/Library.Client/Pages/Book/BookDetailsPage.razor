@@ -1,0 +1,32 @@
+﻿@page "/books/{Id:int}"
+
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Interfaces
+@using Library.Client.Components.Common
+@using Library.Client.Components.Books
+
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+@inject NavigationManager Navigation
+
+<div class="main-content">
+    @if (book is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="content-area content-wide">
+            <BookDetails Book="book" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private BookGetDto? book;
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetAsync(Id);
+    }
+}

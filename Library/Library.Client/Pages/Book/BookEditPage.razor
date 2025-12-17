@@ -1,0 +1,21 @@
+﻿@page "/books/create"
+@page "/books/edit/{Id:int}"
+
+@using Library.Client.Models.BookDtos
+@using Library.Client.Components.Books
+@using Library.Client.Models.Interfaces
+
+@inject IBaseApiService<BookGetDto, BookEditDto> BookService
+@inject NavigationManager Navigation
+
+<div class="main-content">
+    <div class="content-area auth-page">
+        <BookEditForm BookId="@Id" OnSaved="OnSaved" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private void OnSaved() => Navigation.NavigateTo("/books");
+}

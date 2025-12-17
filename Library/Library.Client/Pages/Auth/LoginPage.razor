@@ -1,0 +1,65 @@
+﻿@page "/auth/login"
+
+@using Library.Client.Models.Interfaces
+@using Library.Client.Models.AuthDtos
+@using Library.Client.Services
+
+@inject IAuthService AuthService
+@inject ApiAuthenticationStateProvider AuthState
+@inject NavigationManager Navigation
+
+<div class="main-content">
+    <div class="content-area auth-page">
+        <h2>Вход в аккаунт</h2>
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <InputText @bind-Value="loginModel.Email" placeholder="Email" />
+            <InputText @bind-Value="loginModel.Password" placeholder="Пароль" type="password" />
+            <button class="btn-primary" type="submit">Войти</button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="error">@error</p>
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <p class="error">@error</p>
+}
+
+@code {
+    private LoginDto loginModel = new LoginDto
+        {
+            Email = string.Empty,
+            Password = string.Empty
+        };
+
+    private string? error;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var result = await AuthService.LoginAsync(loginModel);
+            if (result != null)
+            {
+                AuthState.NotifyUserAuthentication();
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                error = "Неверный логин или пароль";
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Произошла ошибка: {ex.Message}";
+        }
+    }
+}

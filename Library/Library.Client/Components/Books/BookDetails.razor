@@ -1,0 +1,23 @@
+﻿@using Library.Client.Models.BookDtos
+
+@inject NavigationManager Navigation
+
+<div class="book-details">
+    <h2>@Book.Title</h2>
+    <p><strong>Автор:</strong> @Book.Author</p>
+    <p><strong>Издательство:</strong> @Book.Publisher</p>
+    <p><strong>Тип публикации:</strong> @Book.PublishingType</p>
+    <p><strong>Год публикации:</strong> @Book.PublicationYear</p>
+    <p><strong>Код:</strong> @Book.Code</p>
+    <p><strong>Инвентарный номер:</strong> @Book.InventoryNumber</p>
+
+    <button class="btn-primary" @onclick="ReserveBook">Забронировать</button>
+</div>
+
+@code {
+    [Parameter]
+    public BookGetDto Book { get; set; } = default!;
+
+    private void ReserveBook() =>
+        Navigation.NavigateTo($"/records/create?bookId={Book.Id}");
+}
