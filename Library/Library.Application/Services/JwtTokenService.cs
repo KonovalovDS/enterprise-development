@@ -1,15 +1,12 @@
 ﻿using Library.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Library.Application.Services;
 
-public class JwtTokenService(
-    UserManager<ApplicationUser> userManager, 
-    IConfiguration configuration)
+public class JwtTokenService(UserManager<ApplicationUser> userManager)
 {
     public async Task<string> GenerateTokenAsync(ApplicationUser user)
     {
@@ -17,9 +14,9 @@ public class JwtTokenService(
 
         var claims = new List<Claim>
         {
+            new(ClaimTypes.NameIdentifier, user.Id),
             new(JwtRegisteredClaimNames.Sub, user.Id),
-            new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new("CustomerId", user.CustomerId?.ToString() ?? "")
+            new(JwtRegisteredClaimNames.Email, user.Email ?? "")
         };
 
         foreach (var role in roles)

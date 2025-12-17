@@ -35,31 +35,20 @@ public class BorrowRecordController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetRecords()
+    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetAllRecords()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Unauthorized();
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
 
-        var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-            return Unauthorized();
+        if (!isAdmin && user?.CustomerId == null)
+            return Forbid();
 
-        IEnumerable<BorrowRecord> records;
+        var allRecords = await borrowRecordRepository.GetAllAsync();
 
-        if (User.IsInRole("Admin"))
-        {
-            records = await borrowRecordRepository.GetAllAsync();
-        }
-        else
-        {
-            if (user.CustomerId == null)
-                return Forbid();
-
-            records = await borrowRecordRepository.GetAllAsync(
-                r => r.CustomerId == user.CustomerId.Value
-            );
-        }
+        IEnumerable<BorrowRecord> records = isAdmin
+            ? allRecords
+            : allRecords.Where(r => r.CustomerId == user!.CustomerId);
 
         return Ok(mapper.Map<List<BorrowRecordGetDto>>(records));
     }
@@ -70,7 +59,6 @@ public class BorrowRecordController(
     /// <param name="id">The ID of the borrow record to return.</param>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpGet("{id:int}")]
@@ -85,7 +73,7 @@ public class BorrowRecordController(
         var user = await userManager.FindByIdAsync(userId!);
 
         if (!isAdmin && user?.CustomerId != record.CustomerId)
-            return Forbid();
+            return NotFound();
 
         var book = await bookRepository.GetByIdAsync(record.BookId);
         var customer = await customerRepository.GetByIdAsync(record.CustomerId);
@@ -102,7 +90,6 @@ public class BorrowRecordController(
     /// <param name="id">The ID of the borrow record to delete.</param>
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteRecordById(int id)
@@ -116,7 +103,7 @@ public class BorrowRecordController(
         var user = await userManager.FindByIdAsync(userId!);
 
         if (!isAdmin && user?.CustomerId != record.CustomerId)
-            return Forbid();
+            return NoContent();
 
         await borrowRecordRepository.DeleteAsync(id);
         return NoContent();
@@ -129,25 +116,24 @@ public class BorrowRecordController(
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<BorrowRecordGetDto>> CreateRecord([FromBody] BorrowRecordEditDto newRecordDto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdmin = User.IsInRole("Admin");
         var user = await userManager.FindByIdAsync(userId!);
 
         if (!isAdmin && user?.CustomerId != newRecordDto.CustomerId)
-            return Forbid();
+            return NotFound();
 
-        var isBookExists = await bookRepository.ExistsById(newRecordDto.BookId);
-        var isCustomerExists = await customerRepository.ExistsById(newRecordDto.CustomerId);
-
-        if (!isBookExists || !isCustomerExists) return NotFound();
+        if (!await bookRepository.ExistsById(newRecordDto.BookId) ||
+            !await customerRepository.ExistsById(newRecordDto.CustomerId))
+            return NotFound();
 
         var newRecord = mapper.Map<BorrowRecord>(newRecordDto);
         await borrowRecordRepository.AddAsync(newRecord);
@@ -164,13 +150,13 @@ public class BorrowRecordController(
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateRecord(int id, [FromBody] BorrowRecordEditDto updatedRecordDto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
         var record = await borrowRecordRepository.GetByIdAsync(id);
         if (record == null)
@@ -181,40 +167,16 @@ public class BorrowRecordController(
         var user = await userManager.FindByIdAsync(userId!);
 
         if (!isAdmin && user?.CustomerId != record.CustomerId)
-            return Forbid();
+            return NotFound();
 
-        var isBookExists = await bookRepository.ExistsById(updatedRecordDto.BookId);
-        var isCustomerExists = await customerRepository.ExistsById(updatedRecordDto.CustomerId);
-        if (!isBookExists || !isCustomerExists)
+        if (!await bookRepository.ExistsById(updatedRecordDto.BookId) ||
+            !await customerRepository.ExistsById(updatedRecordDto.CustomerId))
             return NotFound();
 
         var updatedRecord = mapper.Map<BorrowRecord>(updatedRecordDto);
         updatedRecord.Id = record.Id;
         await borrowRecordRepository.UpdateAsync(updatedRecord);
+
         return NoContent();
-    }
-
-    /// <summary>
-    /// Returns borrow records for the current user.
-    /// </summary>
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [Authorize]
-    [HttpGet("my-records")]
-    public async Task<ActionResult<List<BorrowRecordGetDto>>> GetMyRecords()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Unauthorized();
-
-        var user = await userManager.FindByIdAsync(userId);
-        if (user?.CustomerId == null)
-            return Forbid();
-
-        var records = await borrowRecordRepository.GetAllAsync(r => r.CustomerId == user.CustomerId.Value);
-        var recordsDto = mapper.Map<List<BorrowRecordGetDto>>(records);
-
-        return Ok(recordsDto);
     }
 }

@@ -44,7 +44,6 @@ public class CustomerController(
     /// <param name="id">The ID of the customer to return.</param>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     [HttpGet("{id:int}")]
@@ -58,7 +57,7 @@ public class CustomerController(
         var user = await userManager.FindByIdAsync(userId!);
 
         if (!isAdmin && user?.CustomerId != id)
-            return Forbid();
+            return NotFound();
 
         var customerDto = mapper.Map<CustomerGetDto>(customer);
         return Ok(customerDto);
@@ -84,7 +83,7 @@ public class CustomerController(
         var user = await userManager.FindByIdAsync(userId!);
 
         if (!isAdmin && user?.CustomerId != id)
-            return Forbid();
+            return NoContent();
 
         await customerRepository.DeleteAsync(id);
         return NoContent();
@@ -123,14 +122,49 @@ public class CustomerController(
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateCustomer(int id, [FromBody] CustomerEditDto updatedCustomerDto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid) 
+            return BadRequest(ModelState);
 
         var customer = await customerRepository.GetByIdAsync(id);
-        if (customer == null) return NotFound();
+        if (customer == null) 
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var user = await userManager.FindByIdAsync(userId!);
+
+        if (!isAdmin && user?.CustomerId != id) 
+            return NotFound();
 
         var updatedCustomer = mapper.Map<Customer>(updatedCustomerDto);
         updatedCustomer.Id = customer.Id;
         await customerRepository.UpdateAsync(updatedCustomer);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Returns the profile of the currently authenticated user.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<ActionResult<CustomerGetDto>> GetMyProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user?.CustomerId == null)
+            return NotFound();
+
+        var customer = await customerRepository.GetByIdAsync(user.CustomerId.Value);
+        if (customer == null)
+            return NotFound();
+
+        var customerDto = mapper.Map<CustomerGetDto>(customer);
+        return Ok(customerDto);
     }
 }

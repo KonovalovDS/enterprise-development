@@ -13,8 +13,6 @@ public interface IBorrowRecordRepository
     /// </summary>
     public Task<IEnumerable<BorrowRecord>> GetAllAsync();
 
-    public Task<IEnumerable<BorrowRecord>> GetAllAsync(Expression<Func<BorrowRecord, bool>>? predicate = null);
-
     /// <summary>
     /// Returns a borrow record by its unique identifier.
     /// Returns null if the record does not exist.

@@ -41,7 +41,7 @@ builder.AddProject<Projects.Library_RabbitMqProducer>("RabbitMqProducer")
     .WithEnvironment("RABBITMQ_PUBLISH_DELAY_MS", "100")
     .WithExplicitStart();
 
-builder.AddProject<Projects.Library_Client>("Client")
-    .WithReference(api); 
+//builder.AddProject<Projects.Library_Client>("Client")
+//    .WithReference(api); 
 
 builder.Build().Run();

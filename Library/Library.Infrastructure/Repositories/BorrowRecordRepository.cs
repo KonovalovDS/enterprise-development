@@ -20,14 +20,6 @@ public class BorrowRecordRepository(AppDbContext context) : IBorrowRecordReposit
     public async Task<IEnumerable<BorrowRecord>> GetAllAsync() => 
         await context.BorrowRecords.ToListAsync();
 
-    public async Task<IEnumerable<BorrowRecord>> GetAllAsync(Expression<Func<BorrowRecord, bool>>? predicate = null)
-    {
-        var query = context.BorrowRecords.AsQueryable();
-        if (predicate != null)
-            query = query.Where(predicate);
-        return await query.ToListAsync();
-    }
-
     /// <summary>
     /// Gets a borrow record by its ID.
     /// </summary>
