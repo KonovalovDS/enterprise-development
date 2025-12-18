@@ -10,12 +10,15 @@
 
 <div class="card @CardClass">
     <h3>@(Book?.Title ?? "Загрузка...")</h3>
+
     @if (IsAdmin)
     {
         <p><strong>Пользователь:</strong> @UserName</p>
     }
+
     <p><strong>Дата начала:</strong> @record.BorrowDate.ToString("dd.MM.yyyy")</p>
     <p><strong>Длительность:</strong> @record.BorrowDuration дн.</p>
+    <p><strong>Дата окончания:</strong> @(record.BorrowDate.AddDays(record.BorrowDuration).ToString("dd.MM.yyyy"))</p>
 
     @if (IsAdmin)
     {
@@ -37,11 +40,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var currentUser = await AuthService.GetMyProfileAsync();
-        IsAdmin = currentUser?.Id == 1;
-
+        IsAdmin = await AuthService.IsInRoleAsync("Admin");
         Book = await BooksService.GetAsync(record.BookId);
-
         if (IsAdmin)
         {
             var user = await CustomersService.GetAsync(record.CustomerId);
@@ -49,15 +49,28 @@
         }
     }
 
-    private string CardClass => record.BorrowDate < DateOnly.FromDateTime(DateTime.Now)
-        ? "inactive-record"
-        : "active-record";
+    private string CardClass
+    {
+        get
+        {
+            var endDate = record.BorrowDate.AddDays(record.BorrowDuration);
+            return endDate >= DateOnly.FromDateTime(DateTime.Today)
+                ? "active-record"
+                : "inactive-record";
+        }
+    }
 
     private async Task Delete()
     {
-        if (await JS.InvokeAsync<bool>("confirm", $"Удалить запись {Book?.Title}?"))
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Удалить запись '{Book?.Title}'?");
+        if (confirmed)
+        {
             await OnDeleted.InvokeAsync(record.Id);
+        }
     }
 
-    private async Task Edit() => await OnEdit.InvokeAsync(record.Id);
+    private async Task Edit()
+    {
+        await OnEdit.InvokeAsync(record.Id);
+    }
 }

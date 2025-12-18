@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Library.Application.Contracts.AuthDtos;
-using Library.Application.Contracts.CustomerDtos;
+﻿using Library.Application.Contracts.AuthDtos;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -11,8 +9,7 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
     ICustomerRepository customerRepository,
-    JwtTokenService jwtTokenService,
-    IMapper mapper)
+    JwtTokenService jwtTokenService)
 {
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {

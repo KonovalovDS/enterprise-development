@@ -1,25 +1,13 @@
 ﻿@page "/records/create"
+
 @attribute [Authorize]
 
-@using Library.Client.Models.BookDtos
-@using Library.Client.Models.BorrowRecordDtos
-@using Library.Client.Models.Interfaces
-@using Library.Client.Services
-@using Library.Client.Components.Common
 @using Library.Client.Components.BorrowRecords
 
-@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
-@inject IAuthService AuthService
-@inject IBaseApiService<BookGetDto, BookEditDto> BooksService
 @inject NavigationManager Navigation
-
-<h2>Добавление записи</h2>
 
 <BorrowRecordForm OnSaved="OnSaved" />
 
 @code {
-    private void OnSaved()
-    {
-        Navigation.NavigateTo("/records");
-    }
+    private void OnSaved() => Navigation.NavigateTo("/records");
 }

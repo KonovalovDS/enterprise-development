@@ -1,7 +1,9 @@
 ﻿using Library.Client.Models.AuthDtos;
 using Library.Client.Models.CustomerDtos;
 using Library.Client.Models.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
+using System.Security.Claims;
 
 namespace Library.Client.Services;
 
@@ -49,5 +51,26 @@ public class AuthService(IHttpClientFactory httpFactory, ITokenStorage tokenStor
         {
             return null;
         }
+    }
+
+    public async Task<List<string>> GetRolesAsync()
+    {
+        var token = await GetTokenAsync();
+        if (string.IsNullOrWhiteSpace(token))
+            return [];
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+
+        return jwt.Claims
+                  .Where(c => c.Type == ClaimTypes.Role)
+                  .Select(c => c.Value)
+                  .ToList();
+    }
+
+    public async Task<bool> IsInRoleAsync(string role)
+    {
+        var roles = await GetRolesAsync();
+        return roles.Contains(role);
     }
 }

@@ -2,7 +2,6 @@
 @attribute [Authorize]
 
 @using Library.Client.Models.BorrowRecordDtos
-@using Library.Client.Models.CustomerDtos
 @using Library.Client.Components.BorrowRecords
 @using Library.Client.Models.Interfaces
 
@@ -31,29 +30,21 @@
 
 @code {
     private List<BorrowRecordGetDto> records = new();
-    private CustomerGetDto? CurrentUser;
     private bool IsAdmin = false;
 
     protected override async Task OnInitializedAsync()
     {
-        CurrentUser = await AuthService.GetMyProfileAsync();
-        IsAdmin = CurrentUser?.Id == 1;
-
+        IsAdmin = await AuthService.IsInRoleAsync("Admin");
         await LoadRecords();
     }
 
     private async Task LoadRecords()
     {
         var allRecords = await RecordsService.GetAllAsync();
-        records = IsAdmin
-            ? allRecords
-            : allRecords.Where(r => r.CustomerId == CurrentUser?.Id).ToList();
+        records = allRecords;
     }
 
-    private void OpenNewRecord()
-    {
-        Navigation.NavigateTo("/records/create");
-    }
+    private void OpenNewRecord() => Navigation.NavigateTo("/records/create");
 
     private async Task OnRecordDeleted(int recordId)
     {
@@ -61,8 +52,5 @@
         await LoadRecords();
     }
 
-    private void OnRecordEdit(int recordId)
-    {
-        Navigation.NavigateTo($"/records/edit/{recordId}");
-    }
+    private void OnRecordEdit(int recordId) => Navigation.NavigateTo($"/records/edit/{recordId}");
 }

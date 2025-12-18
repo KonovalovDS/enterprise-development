@@ -2,17 +2,12 @@
 @attribute [Authorize]
 
 @using Library.Client.Components.BorrowRecords
-@inject NavigationManager Navigation
 
-<h2>Забронировать книгу</h2>
+@inject NavigationManager Navigation
 
 <BorrowRecordForm BookId="@BookId" OnSaved="OnSaved" />
 
 @code {
     [Parameter] public int BookId { get; set; }
-
-    private void OnSaved()
-    {
-        Navigation.NavigateTo("/records");
-    }
+    private void OnSaved() => Navigation.NavigateTo("/records");
 }

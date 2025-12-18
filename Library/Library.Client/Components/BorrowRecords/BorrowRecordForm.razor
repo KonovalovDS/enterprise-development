@@ -65,7 +65,7 @@
     private BorrowRecordEditDto recordModel = new()
         {
             CustomerId = 0,
-            BookId = 0, 
+            BookId = 0,
             BorrowDate = DateOnly.FromDateTime(DateTime.Today),
             BorrowDuration = 14
         };
@@ -75,16 +75,24 @@
     private CustomerGetDto? CurrentUser;
     private bool IsAdmin = false;
     private DateTime recordDateTime = DateTime.Today;
+
     private string FormTitle => RecordId.HasValue ? "Редактирование записи" : "Новая запись";
 
     protected override async Task OnInitializedAsync()
     {
         CurrentUser = await AuthService.GetMyProfileAsync();
-        IsAdmin = CurrentUser?.Id == 1;
+        IsAdmin = await AuthService.IsInRoleAsync("Admin");
 
         books = await BooksService.GetAllAsync();
+
         if (BookId.HasValue)
+        {
             recordModel.BookId = BookId.Value;
+        }
+        else if (books.Any() && recordModel.BookId == 0)
+        {
+            recordModel.BookId = books.First().Id;
+        }
 
         if (IsAdmin)
         {
@@ -117,9 +125,13 @@
         recordModel.BorrowDate = DateOnly.FromDateTime(recordDateTime);
 
         if (RecordId.HasValue)
+        {
             await RecordsService.UpdateAsync(RecordId.Value, recordModel);
+        }
         else
+        {
             await RecordsService.CreateAsync(recordModel);
+        }
 
         if (OnSaved.HasDelegate)
             await OnSaved.InvokeAsync();

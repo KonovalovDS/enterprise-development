@@ -10,4 +10,7 @@ public interface IAuthService
     public Task LogoutAsync();
     public Task<string?> GetTokenAsync();
     public Task<CustomerGetDto?> GetMyProfileAsync();
+
+    public Task<List<string>> GetRolesAsync();
+    public Task<bool> IsInRoleAsync(string role);
 }

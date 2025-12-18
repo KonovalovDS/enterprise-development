@@ -2,7 +2,7 @@
     @using Library.Client.Services
 
     @inject NavigationManager Navigation
-    @inject AuthenticationStateProvider AuthProvider
+    @inject ApiAuthenticationStateProvider AuthProvider
 
     <div class="main-menu">
         <div class="menu-left">
@@ -37,6 +37,7 @@
         private async Task Logout()
         {
             await AuthService.LogoutAsync();
+            AuthProvider.NotifyUserLogout();
             Nav.NavigateTo("/");
         }
     }
