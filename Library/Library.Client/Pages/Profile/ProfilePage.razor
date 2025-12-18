@@ -1,0 +1,68 @@
+﻿@page "/profile"
+@attribute [Authorize]
+
+@using Library.Client.Models.Interfaces
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Components.Customers
+@using Library.Client.Components.Common
+
+@inject IAuthService AuthService
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject NavigationManager Navigation
+
+<div class="main-content">
+    @if (profile is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="content-area">
+            <h2 class="page-title">Мой профиль</h2>
+
+            <CustomerEditForm Model="editModel" OnSubmit="Save" />
+
+            <hr />
+
+            <div class="profile-actions">
+                <button class="btn-primary btn-full" @onclick="GoToMyRecords">
+                    Мои записи
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private CustomerGetDto? profile;
+    private CustomerEditDto editModel = new()
+    {
+        Name = "",
+        Address = "",
+        PhoneNumber = ""
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        profile = await AuthService.GetMyProfileAsync();
+        if (profile is not null)
+        {
+            editModel = new()
+            {
+                Name = profile.Name,
+                Address = profile.Address,
+                PhoneNumber = profile.PhoneNumber
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (profile is null) return;
+
+        await CustomerService.UpdateAsync(profile.Id, editModel);
+    }
+
+    private void GoToMyRecords() =>
+        Navigation.NavigateTo("/records");
+}

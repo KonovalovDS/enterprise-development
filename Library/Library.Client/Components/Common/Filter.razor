@@ -1,0 +1,40 @@
+﻿@using Library.Client.Models.Filter
+
+<div class="universal-filter">
+    <input placeholder="@Placeholder"
+           @bind="localOptions.SearchTerm"
+           @bind:event="oninput" />
+
+    <select @bind="localOptions.SortOrder">
+        <option value="asc">A–Z</option>
+        <option value="desc">Z–A</option>
+    </select>
+
+    <button class="btn-primary" @onclick="ApplyFilter">Применить</button>
+</div>
+
+@code {
+    [Parameter] public FilterOptions Options { get; set; } = new();
+    [Parameter] public EventCallback<FilterOptions> OnChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Поиск";
+
+    private FilterOptions localOptions = new();
+
+    protected override void OnParametersSet()
+    {
+        localOptions = new FilterOptions
+            {
+                SearchTerm = Options.SearchTerm,
+                SortOrder = Options.SortOrder
+            };
+    }
+
+    private async Task ApplyFilter()
+    {
+        Options.SearchTerm = localOptions.SearchTerm;
+        Options.SortOrder = localOptions.SortOrder;
+
+        if (OnChanged.HasDelegate)
+            await OnChanged.InvokeAsync(Options);
+    }
+}

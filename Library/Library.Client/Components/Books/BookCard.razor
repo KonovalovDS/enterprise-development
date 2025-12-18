@@ -1,5 +1,11 @@
 ﻿@using Library.Client.Models.BookDtos
 
+@using Library.Client.Models.Interfaces
+@using Library.Client.Models.BorrowRecordDtos
+@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
+
+@inject IAuthService AuthService
+@inject IBaseApiService<BookGetDto, BookEditDto> BooksService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
@@ -13,7 +19,7 @@
     <p class="book-info">@Book.Publisher, @Book.PublicationYear</p>
 
     <div class="book-card-actions">
-        <button class="btn-primary" @onclick:stopPropagation="true" @onclick="ReserveBook">Забронировать</button>
+        <button class="btn-primary" @onclick="() => ReserveBook(Book.Id)">Забронировать</button>
 
         <AuthorizeView Roles="Admin">
             <button class="btn-secondary" @onclick:stopPropagation="true" @onclick="EditBook">Редактировать</button>
@@ -26,8 +32,8 @@
     [Parameter] public BookGetDto Book { get; set; } = default!;
     [Parameter] public EventCallback<int> OnBookDeleted { get; set; }
 
-    private void ReserveBook() =>
-        Navigation.NavigateTo($"/records/create?bookId={Book.Id}");
+    private void ReserveBook(int bookId) =>
+        Navigation.NavigateTo($"/records/create/{bookId}");
 
     private void EditBook() =>
         Navigation.NavigateTo($"/books/edit/{Book.Id}");

@@ -1,40 +1,42 @@
-﻿@using Library.Client.Models.Interfaces
-@using Library.Client.Services
+﻿    @using Library.Client.Models.Interfaces
+    @using Library.Client.Services
 
-@inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthProvider
+    @inject NavigationManager Navigation
+    @inject AuthenticationStateProvider AuthProvider
 
-<nav class="main-menu">
-    <div class="menu-left">
-        <div class="logo">Library</div>
-        <a href="/books">Книги</a>
-        <a href="/records">Мои заказы</a>
-        <AuthorizeView Roles="Admin">
-            <a href="/customers">Пользователи</a>
-        </AuthorizeView>
+    <div class="main-menu">
+        <div class="menu-left">
+            <span class="logo">Library</span>
+
+            <NavLink href="/" class="menu-button">Главная</NavLink>
+            <NavLink href="/books" class="menu-button">Книги</NavLink>
+
+            <AuthorizeView Roles="Admin">
+                <NavLink href="/customers" class="menu-button">Пользователи</NavLink>
+            </AuthorizeView>
+        </div>
+
+        <div class="menu-right">
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink href="/profile" class="menu-button">Профиль</NavLink>
+                    <NavLink href="/records" class="menu-button">Мои записи</NavLink>
+                    <button class="menu-button" @onclick="Logout">Выйти</button>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink href="/auth/login" class="menu-button">Вход</NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
     </div>
-    <div class="menu-right">
-        <AuthorizeView>
-            <Authorized>
-                <a href="#" @onclick="Logout">Выйти</a>
-            </Authorized>
-            <NotAuthorized>
-                <a href="/auth/login">Войти</a>
-                <a href="/auth/register">Регистрация</a>
-            </NotAuthorized>
-        </AuthorizeView>
-    </div>
-</nav>
 
+    @code {
+        [Inject] IAuthService AuthService { get; set; } = default!;
+        [Inject] NavigationManager Nav { get; set; } = default!;
 
-@code {
-    [Inject] IAuthService AuthService { get; set; } = default!;
-    [Inject] ApiAuthenticationStateProvider ApiAuthState { get; set; } = default!;
-
-    private async Task Logout()
-    {
-        await AuthService.LogoutAsync();
-        ApiAuthState.NotifyUserLogout();
-        Navigation.NavigateTo("/");
+        private async Task Logout()
+        {
+            await AuthService.LogoutAsync();
+            Nav.NavigateTo("/");
+        }
     }
-}

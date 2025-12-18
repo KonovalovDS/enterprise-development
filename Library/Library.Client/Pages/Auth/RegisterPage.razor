@@ -4,7 +4,6 @@
 @using Library.Client.Models.AuthDtos
 @using Library.Client.Models.CustomerDtos
 @using Library.Client.Services
-@using Library.Client.Components.Common
 
 @inject IAuthService AuthService
 @inject ApiAuthenticationStateProvider AuthState
@@ -24,20 +23,20 @@
             <InputText @bind-Value="registerModel.CustomerDto.Address" placeholder="Адрес" />
             <InputText @bind-Value="registerModel.CustomerDto.PhoneNumber" placeholder="Телефон" />
 
-            <button class="btn-primary" type="submit">Зарегистрироваться</button>
+            <button class="btn-primary btn-block" type="submit">Зарегистрироваться</button>
         </EditForm>
 
         @if (!string.IsNullOrEmpty(error))
         {
             <p class="error">@error</p>
         }
+
+        <div class="auth-footer-vertical">
+            <span class="auth-footer-text">Уже есть аккаунт?</span>
+            <button class="btn-primary btn-block" @onclick="GoToLogin">Войти</button>
+        </div>
     </div>
 </div>
-
-@if (!string.IsNullOrEmpty(error))
-{
-    <p class="error">@error</p>
-}
 
 @code {
     private RegisterDto registerModel = new RegisterDto
@@ -56,15 +55,24 @@
 
     private async Task HandleRegister()
     {
-        var result = await AuthService.RegisterAsync(registerModel);
-        if (result != null)
+        try
         {
-            AuthState.NotifyUserAuthentication();
-            Navigation.NavigateTo("/");
+            var result = await AuthService.RegisterAsync(registerModel);
+            if (result != null)
+            {
+                AuthState.NotifyUserAuthentication();
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                error = "Ошибка регистрации";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            error = "Ошибка регистрации";
+            error = $"Произошла ошибка: {ex.Message}";
         }
     }
+
+    private void GoToLogin() => Navigation.NavigateTo("/auth/login");
 }

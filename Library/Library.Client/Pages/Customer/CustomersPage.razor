@@ -1,0 +1,75 @@
+﻿@page "/customers"
+@attribute [Authorize(Roles = "Admin")]
+
+@using Library.Client.Models.Interfaces
+@using Library.Client.Models.Filter
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Components.Customers
+@using Library.Client.Components.Common
+
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+
+<div class="main-content">
+    @if (customers is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="content-area content-wide">
+            <h2 class="page-title">Пользователи</h2>
+            <div class="flex-container">
+                <div class="filter-panel">
+                    <Filter Options="filter"
+                            Placeholder="Имя / телефон / адрес"
+                            OnChanged="ApplyFilter" />
+                </div>
+                <div class="books-main">
+                    <CustomersGrid Customers="filteredCustomers" />
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CustomerGetDto>? customers;
+    private List<CustomerGetDto> filteredCustomers = new();
+    private FilterOptions filter = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            customers = await CustomerService.GetAllAsync();
+        }
+        catch
+        {
+            customers = new List<CustomerGetDto>();
+        }
+
+        ApplyFilter(filter);
+    }
+
+    private void ApplyFilter(FilterOptions options)
+    {
+        if (customers is null)
+            return;
+
+        var query = customers.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(options.SearchTerm))
+        {
+            string term = options.SearchTerm.Trim().ToLower();
+            query = query.Where(c =>
+                (c.Name?.ToLower().Contains(term) ?? false) ||
+                (c.PhoneNumber?.Contains(term) ?? false) ||
+                (c.Address?.ToLower().Contains(term) ?? false)
+            );
+        }
+
+        filteredCustomers = options.SortOrder == "asc"
+            ? query.OrderBy(c => c.Name).ToList()
+            : query.OrderByDescending(c => c.Name).ToList();
+    }
+}

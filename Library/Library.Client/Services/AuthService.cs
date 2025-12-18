@@ -42,7 +42,7 @@ public class AuthService(IHttpClientFactory httpFactory, ITokenStorage tokenStor
     {
         try
         {
-            var profile = await _http.GetFromJsonAsync<CustomerGetDto>("api/auth/profile");
+            var profile = await _http.GetFromJsonAsync<CustomerGetDto>("api/profile");
             return profile;
         }
         catch (HttpRequestException)

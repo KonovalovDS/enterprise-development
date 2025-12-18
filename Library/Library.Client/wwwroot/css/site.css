@@ -19,7 +19,7 @@ body, html {
 .main-content {
     flex: 1;
     display: flex;
-    justify-content: center; /* горизонтальная центровка */
+    justify-content: center;
     align-items: flex-start;
     padding: 30px 0;
 }
@@ -56,7 +56,6 @@ body, html {
     flex: 1;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .flex-container {
         flex-direction: column;
@@ -86,14 +85,14 @@ body, html {
     .main-menu .menu-right {
         display: flex;
         align-items: center;
-        gap: 25px;
+        gap: 15px;
     }
 
-        .main-menu .menu-left .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2979ff;
-        }
+    .main-menu .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2979ff;
+    }
 
     .main-menu a {
         color: #fff;
@@ -108,17 +107,25 @@ body, html {
             transform: scale(1.05);
         }
 
-    .main-menu .menu-right a {
+    .main-menu .menu-right a,
+    .menu-button {
         padding: 6px 12px;
         border-radius: 6px;
-        background-color: #292929;
-        transition: all 0.2s;
+        background-color: #2979ff;
+        color: #fff;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
     }
 
-        .main-menu .menu-right a:hover {
-            background-color: #2979ff;
-            color: #fff;
+        .main-menu .menu-right a:hover,
+        .menu-button:hover {
+            background-color: #1c5fd0;
             transform: scale(1.05);
+        }
+
+        .menu-button.active {
+            background-color: #1c5fd0;
         }
 
 .footer {
@@ -149,9 +156,33 @@ body, html {
 /* ================================================== */
 /* Формы и кнопки                                    */
 /* ================================================== */
+.form-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 25px;
+    border-radius: 15px;
+    background-color: #121212;
+    box-shadow: 0 0 30px rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+    }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 input, textarea, select {
     display: block;
-    margin: 12px 0;
+    margin: 0;
     padding: 10px 15px;
     width: 100%;
     border-radius: 10px;
@@ -167,7 +198,8 @@ input, textarea, select {
         box-shadow: 0 0 5px #2979ff;
     }
 
-button.btn-primary {
+button.btn-primary,
+button.btn-primary.btn-block {
     background-color: #2979ff;
     border: none;
     padding: 10px 25px;
@@ -178,10 +210,15 @@ button.btn-primary {
     transition: all 0.2s;
 }
 
-    button.btn-primary:hover {
+    button.btn-primary:hover,
+    button.btn-primary.btn-block:hover {
         background-color: #1c5ed6;
         transform: scale(1.05);
     }
+
+.btn-block {
+    width: 100%;
+}
 
 /* ================================================== */
 /* Ошибки и уведомления                             */
@@ -462,3 +499,43 @@ button.btn-primary {
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
     text-align: center;
 }
+
+.auth-footer-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    gap: 12px;
+}
+
+.auth-footer-text {
+    font-size: 1rem;
+    color: #ccc;
+}
+
+button.btn-primary.btn-block {
+    width: 100%;
+    padding: 12px 0;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+    font-size: 1rem;
+}
+
+    button.btn-primary.btn-block:hover {
+        background-color: #1c5ed6;
+        transform: scale(1.05);
+    }
+
+.profile-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+    .profile-actions .btn-full {
+        width: 200px;
+        padding: 10px 0;
+        font-size: 1rem;
+        border-radius: 10px;
+    }

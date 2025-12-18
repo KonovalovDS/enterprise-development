@@ -21,12 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\BorrowRecords\" />
-    <Folder Include="Components\Customers\" />
-    <Folder Include="Pages\Customer\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="wwwroot\NotAuthorized.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

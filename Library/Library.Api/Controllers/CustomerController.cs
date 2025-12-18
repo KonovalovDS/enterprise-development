@@ -149,7 +149,7 @@ public class CustomerController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
-    [HttpGet("profile")]
+    [HttpGet("/api/profile")]
     public async Task<ActionResult<CustomerGetDto>> GetMyProfile()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

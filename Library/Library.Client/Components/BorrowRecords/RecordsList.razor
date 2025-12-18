@@ -1,0 +1,14 @@
+﻿@using Library.Client.Models.BorrowRecordDtos
+
+<div class="card-grid">
+    @foreach (var r in Records)
+    {
+        <BorrowRecordCard record="r" OnDeleted="OnRecordDeleted" OnEdit="OnRecordEdit" />
+    }
+</div>
+
+@code {
+    [Parameter] public List<BorrowRecordGetDto> Records { get; set; } = new();
+    [Parameter] public EventCallback<int> OnRecordDeleted { get; set; }
+    [Parameter] public EventCallback<int> OnRecordEdit { get; set; }
+}

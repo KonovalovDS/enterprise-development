@@ -17,7 +17,9 @@
     {
         <div class="content-area content-wide flex-container">
             <div class="filter-panel">
-                <BooksFilter OnFilterChanged="ApplyFilter" />
+                <Filter Options="filter"
+                Placeholder="Название / автор / год"
+                OnChanged="ApplyFilter" />
             </div>
             <div class="books-main">
                 @if (!filteredBooks.Any())
@@ -35,11 +37,20 @@
 
 @code {
     private List<BookGetDto>? books;
+    private FilterOptions filter = new();
     private List<BookGetDto> filteredBooks = new();
 
     protected override async Task OnInitializedAsync()
     {
-        books = await BookService.GetAllAsync();
+        try
+        {
+            books = await BookService.GetAllAsync();
+        }
+        catch
+        {
+            books = new List<BookGetDto>();
+        }
+
         filteredBooks = books;
     }
 
@@ -53,7 +64,6 @@
         if (!string.IsNullOrWhiteSpace(options.SearchTerm))
         {
             string term = options.SearchTerm.Trim().ToLower();
-
             query = query.Where(b =>
                 (b.Title?.ToLower().Contains(term) ?? false) ||
                 (b.Author?.ToLower().Contains(term) ?? false) ||
@@ -68,10 +78,15 @@
 
     private async Task DeleteBook(int id)
     {
-        if (BookService is null)
-            return;
-        await BookService.DeleteAsync(id);
-        books = await BookService.GetAllAsync();
-        ApplyFilter(new FilterOptions { SearchTerm = null, SortOrder = "asc" });
+        try
+        {
+            await BookService.DeleteAsync(id);
+            books = await BookService.GetAllAsync();
+            ApplyFilter(new FilterOptions { SearchTerm = null, SortOrder = "asc" });
+        }
+        catch
+        {
+            
+        }
     }
 }

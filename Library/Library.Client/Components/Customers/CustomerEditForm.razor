@@ -1,0 +1,16 @@
+﻿@using Library.Client.Models.CustomerDtos
+
+<EditForm Model="Model" OnValidSubmit="OnSubmit">
+    <InputText @bind-Value="Model.Name" placeholder="ФИО" />
+    <InputText @bind-Value="Model.Address" placeholder="Адрес" />
+    <InputText @bind-Value="Model.PhoneNumber" placeholder="Телефон" />
+
+    <button class="btn-primary" type="submit">
+        Сохранить
+    </button>
+</EditForm>
+
+@code {
+    [Parameter] public CustomerEditDto Model { get; set; } = default!;
+    [Parameter] public EventCallback OnSubmit { get; set; }
+}

@@ -1,0 +1,129 @@
+﻿@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Interfaces
+
+@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
+@inject IBaseApiService<BookGetDto, BookEditDto> BooksService
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomersService
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="form-container">
+    <h2 class="text-center mb-4">@FormTitle</h2>
+
+    <EditForm Model="recordModel" OnValidSubmit="HandleSave">
+        <div class="form-group">
+            <label>Книга</label>
+            <select @bind="recordModel.BookId" class="form-control">
+                @foreach (var b in books)
+                {
+                    <option value="@b.Id">@b.Title (@b.Author)</option>
+                }
+            </select>
+        </div>
+
+        @if (IsAdmin)
+        {
+            <div class="form-group">
+                <label>Пользователь</label>
+                <select @bind="recordModel.CustomerId" class="form-control">
+                    @foreach (var u in users)
+                    {
+                        <option value="@u.Id">@u.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Дата начала аренды</label>
+                <input type="date" class="form-control" @bind="recordDateTime" />
+            </div>
+        }
+        else
+        {
+            <div class="form-group">
+                <label>Пользователь</label>
+                <input type="text" class="form-control" value="@CurrentUser?.Name" disabled />
+            </div>
+        }
+
+        <div class="form-group">
+            <label>Длительность (дней)</label>
+            <input type="number" min="1" class="form-control" @bind="recordModel.BorrowDuration" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-3">Сохранить</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public int? RecordId { get; set; }
+    [Parameter] public int? BookId { get; set; }
+
+    private BorrowRecordEditDto recordModel = new()
+        {
+            CustomerId = 0,
+            BookId = 0, 
+            BorrowDate = DateOnly.FromDateTime(DateTime.Today),
+            BorrowDuration = 14
+        };
+
+    private List<BookGetDto> books = new();
+    private List<CustomerGetDto> users = new();
+    private CustomerGetDto? CurrentUser;
+    private bool IsAdmin = false;
+    private DateTime recordDateTime = DateTime.Today;
+    private string FormTitle => RecordId.HasValue ? "Редактирование записи" : "Новая запись";
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentUser = await AuthService.GetMyProfileAsync();
+        IsAdmin = CurrentUser?.Id == 1;
+
+        books = await BooksService.GetAllAsync();
+        if (BookId.HasValue)
+            recordModel.BookId = BookId.Value;
+
+        if (IsAdmin)
+        {
+            users = await CustomersService.GetAllAsync();
+        }
+        else
+        {
+            recordModel.CustomerId = CurrentUser!.Id;
+        }
+
+        if (RecordId.HasValue)
+        {
+            var existing = await RecordsService.GetAsync(RecordId.Value);
+            if (existing != null)
+            {
+                recordModel = new BorrowRecordEditDto
+                    {
+                        BookId = existing.BookId,
+                        CustomerId = existing.CustomerId,
+                        BorrowDate = existing.BorrowDate,
+                        BorrowDuration = existing.BorrowDuration
+                    };
+                recordDateTime = existing.BorrowDate.ToDateTime(TimeOnly.MinValue);
+            }
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        recordModel.BorrowDate = DateOnly.FromDateTime(recordDateTime);
+
+        if (RecordId.HasValue)
+            await RecordsService.UpdateAsync(RecordId.Value, recordModel);
+        else
+            await RecordsService.CreateAsync(recordModel);
+
+        if (OnSaved.HasDelegate)
+            await OnSaved.InvokeAsync();
+
+        Navigation.NavigateTo("/records");
+    }
+}

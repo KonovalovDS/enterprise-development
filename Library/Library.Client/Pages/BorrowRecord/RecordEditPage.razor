@@ -1,0 +1,18 @@
+﻿@page "/records/edit/{RecordId:int}"
+@attribute [Authorize]
+
+@using Library.Client.Components.BorrowRecords
+@inject NavigationManager Navigation
+
+<h2>Редактирование записи</h2>
+
+<BorrowRecordForm RecordId="@RecordId" OnSaved="OnSaved" />
+
+@code {
+    [Parameter] public int RecordId { get; set; }
+
+    private void OnSaved()
+    {
+        Navigation.NavigateTo("/records");
+    }
+}

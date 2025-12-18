@@ -1,0 +1,12 @@
+﻿@using Library.Client.Models.CustomerDtos
+
+<div class="card-grid">
+    @foreach (var customer in Customers)
+    {
+        <CustomerCard Customer="customer" />
+    }
+</div>
+
+@code {
+    [Parameter] public List<CustomerGetDto> Customers { get; set; } = new();
+}

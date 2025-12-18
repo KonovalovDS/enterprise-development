@@ -1,4 +1,68 @@
 ﻿@page "/records"
 @attribute [Authorize]
 
-<h2>Мои записи</h2>
+@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Components.BorrowRecords
+@using Library.Client.Models.Interfaces
+
+@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="main-content">
+    <div class="content-area content-wide">
+        <button class="btn-primary mb-3" @onclick="OpenNewRecord">Добавить запись</button>
+
+        @if (records is null)
+        {
+            <p>Загрузка...</p>
+        }
+        else if (!records.Any())
+        {
+            <p>Записей не найдено.</p>
+        }
+        else
+        {
+            <RecordsList Records="records" OnRecordDeleted="OnRecordDeleted" OnRecordEdit="OnRecordEdit" />
+        }
+    </div>
+</div>
+
+@code {
+    private List<BorrowRecordGetDto> records = new();
+    private CustomerGetDto? CurrentUser;
+    private bool IsAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentUser = await AuthService.GetMyProfileAsync();
+        IsAdmin = CurrentUser?.Id == 1;
+
+        await LoadRecords();
+    }
+
+    private async Task LoadRecords()
+    {
+        var allRecords = await RecordsService.GetAllAsync();
+        records = IsAdmin
+            ? allRecords
+            : allRecords.Where(r => r.CustomerId == CurrentUser?.Id).ToList();
+    }
+
+    private void OpenNewRecord()
+    {
+        Navigation.NavigateTo("/records/create");
+    }
+
+    private async Task OnRecordDeleted(int recordId)
+    {
+        await RecordsService.DeleteAsync(recordId);
+        await LoadRecords();
+    }
+
+    private void OnRecordEdit(int recordId)
+    {
+        Navigation.NavigateTo($"/records/edit/{recordId}");
+    }
+}

@@ -1,0 +1,63 @@
+﻿@using Library.Client.Models.BorrowRecordDtos
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.BookDtos
+@using Library.Client.Models.Interfaces
+
+@inject IBaseApiService<BookGetDto, BookEditDto> BooksService
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomersService
+@inject IAuthService AuthService
+@inject IJSRuntime JS
+
+<div class="card @CardClass">
+    <h3>@(Book?.Title ?? "Загрузка...")</h3>
+    @if (IsAdmin)
+    {
+        <p><strong>Пользователь:</strong> @UserName</p>
+    }
+    <p><strong>Дата начала:</strong> @record.BorrowDate.ToString("dd.MM.yyyy")</p>
+    <p><strong>Длительность:</strong> @record.BorrowDuration дн.</p>
+
+    @if (IsAdmin)
+    {
+        <div class="book-card-actions">
+            <button class="btn-secondary" @onclick="Edit">Редактировать</button>
+            <button class="btn-danger" @onclick="Delete">Удалить</button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public BorrowRecordGetDto record { get; set; } = default!;
+    [Parameter] public EventCallback<int> OnDeleted { get; set; }
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
+
+    private BookGetDto? Book;
+    private string UserName = "";
+    private bool IsAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUser = await AuthService.GetMyProfileAsync();
+        IsAdmin = currentUser?.Id == 1;
+
+        Book = await BooksService.GetAsync(record.BookId);
+
+        if (IsAdmin)
+        {
+            var user = await CustomersService.GetAsync(record.CustomerId);
+            UserName = user?.Name ?? $"User {record.CustomerId}";
+        }
+    }
+
+    private string CardClass => record.BorrowDate < DateOnly.FromDateTime(DateTime.Now)
+        ? "inactive-record"
+        : "active-record";
+
+    private async Task Delete()
+    {
+        if (await JS.InvokeAsync<bool>("confirm", $"Удалить запись {Book?.Title}?"))
+            await OnDeleted.InvokeAsync(record.Id);
+    }
+
+    private async Task Edit() => await OnEdit.InvokeAsync(record.Id);
+}

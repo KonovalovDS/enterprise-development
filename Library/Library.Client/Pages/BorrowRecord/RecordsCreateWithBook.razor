@@ -1,0 +1,18 @@
+﻿@page "/records/create/{BookId:int}"
+@attribute [Authorize]
+
+@using Library.Client.Components.BorrowRecords
+@inject NavigationManager Navigation
+
+<h2>Забронировать книгу</h2>
+
+<BorrowRecordForm BookId="@BookId" OnSaved="OnSaved" />
+
+@code {
+    [Parameter] public int BookId { get; set; }
+
+    private void OnSaved()
+    {
+        Navigation.NavigateTo("/records");
+    }
+}

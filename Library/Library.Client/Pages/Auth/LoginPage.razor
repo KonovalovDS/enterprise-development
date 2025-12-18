@@ -18,20 +18,20 @@
 
             <InputText @bind-Value="loginModel.Email" placeholder="Email" />
             <InputText @bind-Value="loginModel.Password" placeholder="Пароль" type="password" />
-            <button class="btn-primary" type="submit">Войти</button>
+            <button class="btn-primary btn-block" type="submit">Войти</button>
         </EditForm>
 
         @if (!string.IsNullOrEmpty(error))
         {
             <p class="error">@error</p>
         }
+
+        <div class="auth-footer-vertical">
+            <span class="auth-footer-text">Еще нет аккаунта?</span>
+            <button class="btn-primary btn-block" @onclick="GoToRegister">Зарегистрироваться</button>
+        </div>
     </div>
 </div>
-
-@if (!string.IsNullOrEmpty(error))
-{
-    <p class="error">@error</p>
-}
 
 @code {
     private LoginDto loginModel = new LoginDto
@@ -62,4 +62,6 @@
             error = $"Произошла ошибка: {ex.Message}";
         }
     }
+
+    private void GoToRegister() => Navigation.NavigateTo("/auth/register");
 }

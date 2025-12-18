@@ -1,0 +1,25 @@
+﻿@using Library.Client.Models.CustomerDtos
+
+@inject NavigationManager Nav
+
+<div class="customer-card">
+    <h3>@Customer.Name</h3>
+    <p>@Customer.PhoneNumber</p>
+    <p>@Customer.Address</p>
+    <p class="muted">Регистрация: @Customer.RegisterDate</p>
+
+    <div class="card-actions">
+        <button class="btn-secondary" @onclick="ViewRecords">Записи</button>
+        <button class="btn-primary" @onclick="EditCustomer">Редактировать</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CustomerGetDto Customer { get; set; } = default!;
+
+    private void EditCustomer() =>
+        Nav.NavigateTo($"/customers/{Customer.Id}");
+
+    private void ViewRecords() =>
+        Nav.NavigateTo($"/records?customerId={Customer.Id}");
+}
