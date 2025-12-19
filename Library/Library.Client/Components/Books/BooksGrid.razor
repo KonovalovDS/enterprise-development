@@ -9,6 +9,9 @@
 </div>
 
 @code {
-    [Parameter] public List<BookGetDto> Books { get; set; } = new();
-    [Parameter] public EventCallback<int> OnBookDeleted { get; set; }
+    [Parameter] 
+    public List<BookGetDto> Books { get; set; } = new();
+
+    [Parameter] 
+    public EventCallback<int> OnBookDeleted { get; set; }
 }

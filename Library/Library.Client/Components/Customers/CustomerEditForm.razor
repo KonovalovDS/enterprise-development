@@ -11,6 +11,9 @@
 </EditForm>
 
 @code {
-    [Parameter] public CustomerEditDto Model { get; set; } = default!;
-    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] 
+    public CustomerEditDto Model { get; set; } = default!;
+
+    [Parameter] 
+    public EventCallback OnSubmit { get; set; }
 }

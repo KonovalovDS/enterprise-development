@@ -15,14 +15,14 @@
     }
     else
     {
-        <div class="content-area content-wide">
-            <BookDetails Book="book" />
-        </div>
+        <BookDetails Book="book" />
     }
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] 
+    public int Id { get; set; }
+
     private BookGetDto? book;
 
     protected override async Task OnInitializedAsync()

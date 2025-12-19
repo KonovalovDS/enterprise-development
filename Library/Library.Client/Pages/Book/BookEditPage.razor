@@ -2,8 +2,8 @@
 @page "/books/edit/{Id:int}"
 
 @using Library.Client.Models.BookDtos
-@using Library.Client.Components.Books
 @using Library.Client.Models.Interfaces
+@using Library.Client.Components.Books
 
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 @inject NavigationManager Navigation
@@ -15,7 +15,8 @@
 </div>
 
 @code {
-    [Parameter] public int? Id { get; set; }
+    [Parameter] 
+    public int? Id { get; set; }
 
     private void OnSaved() => Navigation.NavigateTo("/books");
 }

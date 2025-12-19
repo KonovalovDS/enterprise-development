@@ -17,8 +17,11 @@
 </EditForm>
 
 @code {
-    [Parameter] public int? BookId { get; set; }
-    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] 
+    public int? BookId { get; set; }
+
+    [Parameter] 
+    public EventCallback OnSaved { get; set; }
 
     private BookEditDto bookModel = new BookEditDto
         {

@@ -14,9 +14,14 @@
 </div>
 
 @code {
-    [Parameter] public FilterOptions Options { get; set; } = new();
-    [Parameter] public EventCallback<FilterOptions> OnChanged { get; set; }
-    [Parameter] public string Placeholder { get; set; } = "Поиск";
+    [Parameter] 
+    public FilterOptions Options { get; set; } = new();
+
+    [Parameter] 
+    public EventCallback<FilterOptions> OnChanged { get; set; }
+
+    [Parameter] 
+    public string Placeholder { get; set; } = "Поиск";
 
     private FilterOptions localOptions = new();
 

@@ -2,20 +2,31 @@
 
 @inject NavigationManager Navigation
 
-<div class="book-details">
-    <h2>@Book.Title</h2>
-    <p><strong>Автор:</strong> @Book.Author</p>
-    <p><strong>Издательство:</strong> @Book.Publisher</p>
-    <p><strong>Тип публикации:</strong> @Book.PublishingType</p>
-    <p><strong>Год публикации:</strong> @Book.PublicationYear</p>
-    <p><strong>Код:</strong> @Book.Code</p>
-    <p><strong>Инвентарный номер:</strong> @Book.InventoryNumber</p>
+<div class="book-details-container">
+    <div class="book-details-card">
+        <div class="book-details-image">
+            <div class="book-image-placeholder"></div>
+        </div>
 
-    <button class="btn-primary" @onclick="ReserveBook">Забронировать</button>
+        <div class="book-details-info">
+            <h2>@Book.Title</h2>
+
+            <p><strong>Автор:</strong> @Book.Author</p>
+            <p><strong>Издательство:</strong> @Book.Publisher</p>
+            <p><strong>Тип публикации:</strong> @Book.PublishingType</p>
+            <p><strong>Год публикации:</strong> @Book.PublicationYear</p>
+            <p><strong>Код:</strong> @Book.Code</p>
+            <p><strong>Инвентарный номер:</strong> @Book.InventoryNumber</p>
+
+            <button class="btn-primary btn-full" @onclick="ReserveBook">
+                Забронировать
+            </button>
+        </div>
+    </div>
 </div>
 
 @code {
-    [Parameter]
+    [Parameter] 
     public BookGetDto Book { get; set; } = default!;
 
     private void ReserveBook() =>

@@ -8,6 +8,8 @@
 <BorrowRecordForm RecordId="@RecordId" OnSaved="OnSaved" />
 
 @code {
-    [Parameter] public int RecordId { get; set; }
+    [Parameter] 
+    public int RecordId { get; set; }
+
     private void OnSaved() => Navigation.NavigateTo("/records");
 }

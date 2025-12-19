@@ -2,8 +2,8 @@
 @attribute [Authorize(Roles = "Admin")]
 
 @using Library.Client.Models.Interfaces
-@using Library.Client.Models.Filter
 @using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.Filter
 @using Library.Client.Components.Customers
 @using Library.Client.Components.Common
 
@@ -34,7 +34,9 @@
 
 @code {
     private List<CustomerGetDto>? customers;
+
     private List<CustomerGetDto> filteredCustomers = new();
+
     private FilterOptions filter = new();
 
     protected override async Task OnInitializedAsync()

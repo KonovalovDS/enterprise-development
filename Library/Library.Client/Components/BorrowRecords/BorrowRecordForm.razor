@@ -1,6 +1,6 @@
 ﻿@using Library.Client.Models.BorrowRecordDtos
-@using Library.Client.Models.CustomerDtos
 @using Library.Client.Models.BookDtos
+@using Library.Client.Models.CustomerDtos
 @using Library.Client.Models.Interfaces
 
 @inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
@@ -58,22 +58,31 @@
 </div>
 
 @code {
-    [Parameter] public EventCallback OnSaved { get; set; }
-    [Parameter] public int? RecordId { get; set; }
-    [Parameter] public int? BookId { get; set; }
+    [Parameter] 
+    public EventCallback OnSaved { get; set; }
+
+    [Parameter] 
+    public int? RecordId { get; set; }
+
+    [Parameter] 
+    public int? BookId { get; set; }
 
     private BorrowRecordEditDto recordModel = new()
-        {
-            CustomerId = 0,
-            BookId = 0,
-            BorrowDate = DateOnly.FromDateTime(DateTime.Today),
-            BorrowDuration = 14
-        };
+    {
+        CustomerId = 0,
+        BookId = 0,
+        BorrowDate = DateOnly.FromDateTime(DateTime.Today),
+        BorrowDuration = 14
+    };
 
     private List<BookGetDto> books = new();
+
     private List<CustomerGetDto> users = new();
+
     private CustomerGetDto? CurrentUser;
+
     private bool IsAdmin = false;
+
     private DateTime recordDateTime = DateTime.Today;
 
     private string FormTitle => RecordId.HasValue ? "Редактирование записи" : "Новая запись";
@@ -82,26 +91,17 @@
     {
         CurrentUser = await AuthService.GetMyProfileAsync();
         IsAdmin = await AuthService.IsInRoleAsync("Admin");
-
         books = await BooksService.GetAllAsync();
 
         if (BookId.HasValue)
-        {
             recordModel.BookId = BookId.Value;
-        }
         else if (books.Any() && recordModel.BookId == 0)
-        {
             recordModel.BookId = books.First().Id;
-        }
 
         if (IsAdmin)
-        {
             users = await CustomersService.GetAllAsync();
-        }
         else
-        {
             recordModel.CustomerId = CurrentUser!.Id;
-        }
 
         if (RecordId.HasValue)
         {
@@ -125,13 +125,9 @@
         recordModel.BorrowDate = DateOnly.FromDateTime(recordDateTime);
 
         if (RecordId.HasValue)
-        {
             await RecordsService.UpdateAsync(RecordId.Value, recordModel);
-        }
         else
-        {
             await RecordsService.CreateAsync(recordModel);
-        }
 
         if (OnSaved.HasDelegate)
             await OnSaved.InvokeAsync();

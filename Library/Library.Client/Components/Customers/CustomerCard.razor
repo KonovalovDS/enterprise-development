@@ -1,25 +1,58 @@
 ﻿@using Library.Client.Models.CustomerDtos
 
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<div class="customer-card">
-    <h3>@Customer.Name</h3>
-    <p>@Customer.PhoneNumber</p>
-    <p>@Customer.Address</p>
-    <p class="muted">Регистрация: @Customer.RegisterDate</p>
+<div class="customer-card" @onclick="SelectCustomer">
+    <div class="customer-info">
+        <h3 class="customer-name">@Customer.Name</h3>
+        <p class="customer-phone">@Customer.PhoneNumber</p>
+        <p class="customer-address">@Customer.Address</p>
+        <p class="customer-registered">Регистрация: @Customer.RegisterDate.ToShortDateString()</p>
+    </div>
 
-    <div class="card-actions">
-        <button class="btn-secondary" @onclick="ViewRecords">Записи</button>
-        <button class="btn-primary" @onclick="EditCustomer">Редактировать</button>
+    <div class="customer-card-actions">
+        <button class="btn-primary btn-full" @onclick:stopPropagation="true" @onclick="ViewRecords">
+            Записи
+        </button>
+        <button class="btn-secondary btn-full" @onclick:stopPropagation="true" @onclick="EditCustomer">
+            Редактировать
+        </button>
+        <button class="btn-danger btn-full" @onclick:stopPropagation="true" @onclick="DeleteCustomer">
+            Удалить
+        </button>
     </div>
 </div>
 
 @code {
-    [Parameter] public CustomerGetDto Customer { get; set; } = default!;
+    [Parameter] 
+    public CustomerGetDto Customer { get; set; } = default!;
+
+    [Parameter] 
+    public EventCallback<int> OnDeleted { get; set; }
 
     private void EditCustomer() =>
         Nav.NavigateTo($"/customers/{Customer.Id}");
 
     private void ViewRecords() =>
         Nav.NavigateTo($"/records?customerId={Customer.Id}");
+
+    private void SelectCustomer()
+    {
+        
+    }
+
+    private async Task DeleteCustomer()
+    {
+        if (!await JSConfirm("Вы уверены, что хотите удалить пользователя?"))
+            return;
+
+        if (OnDeleted.HasDelegate)
+            await OnDeleted.InvokeAsync(Customer.Id);
+    }
+
+    private async Task<bool> JSConfirm(string message)
+    {
+        return await JS.InvokeAsync<bool>("confirm", message);
+    }
 }

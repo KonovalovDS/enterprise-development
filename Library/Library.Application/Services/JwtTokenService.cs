@@ -6,8 +6,17 @@ using System.Security.Claims;
 
 namespace Library.Application.Services;
 
+/// <summary>
+/// Service responsible for generating JWT tokens for authenticated users.
+/// </summary>
+/// <param name="userManager">The <see cref="UserManager{TUser}"/> used to retrieve user roles and information.</param>
 public class JwtTokenService(UserManager<ApplicationUser> userManager)
 {
+    /// <summary>
+    /// Generates a JWT token for the specified user, including claims for user ID, email, and roles.
+    /// </summary>
+    /// <param name="user">The <see cref="ApplicationUser"/> for whom to generate the token.</param>
+    /// <returns>A JWT token as a string that can be used for authentication.</returns>
     public async Task<string> GenerateTokenAsync(ApplicationUser user)
     {
         var roles = await userManager.GetRolesAsync(user);

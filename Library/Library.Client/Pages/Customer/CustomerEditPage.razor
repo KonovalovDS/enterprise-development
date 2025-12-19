@@ -1,0 +1,66 @@
+﻿@page "/customers/{CustomerId:int}"
+@attribute [Authorize(Roles = "Admin")]
+
+@using Library.Client.Models.CustomerDtos
+@using Library.Client.Models.Interfaces
+
+@inject IBaseApiService<CustomerGetDto, CustomerEditDto> CustomerService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="main-content">
+    @if (customerModel is null)
+    {
+        <p>Загрузка...</p>
+    }
+    else
+    {
+        <div class="content-area form-container">
+            <h2>Редактирование пользователя</h2>
+            <EditForm Model="customerModel" OnValidSubmit="SaveCustomer">
+                <div class="form-group">
+                    <InputText @bind-Value="customerModel.Name" placeholder="ФИО" class="form-control" />
+                    <InputText @bind-Value="customerModel.Address" placeholder="Адрес" class="form-control" />
+                    <InputText @bind-Value="customerModel.PhoneNumber" placeholder="Телефон" class="form-control" />
+                </div>
+
+                <button class="btn-primary btn-block" type="submit">Сохранить</button>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] 
+    public int CustomerId { get; set; }
+
+    private CustomerEditDto? customerModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var existing = await CustomerService.GetAsync(CustomerId);
+        if (existing != null)
+        {
+            customerModel = new CustomerEditDto
+                {
+                    Name = existing.Name,
+                    Address = existing.Address,
+                    PhoneNumber = existing.PhoneNumber
+                };
+        }
+    }
+
+    private async Task SaveCustomer()
+    {
+        if (customerModel is null)
+            return;
+
+        await CustomerService.UpdateAsync(CustomerId, customerModel);
+        Nav.NavigateTo("/customers");
+    }
+
+    private async Task<bool> JSConfirm(string message)
+    {
+        return await JS.InvokeAsync<bool>("confirm", message);
+    }
+}

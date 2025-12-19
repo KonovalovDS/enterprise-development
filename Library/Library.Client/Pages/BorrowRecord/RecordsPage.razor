@@ -4,53 +4,130 @@
 @using Library.Client.Models.BorrowRecordDtos
 @using Library.Client.Components.BorrowRecords
 @using Library.Client.Models.Interfaces
+@using Library.Client.Components.Common
 
 @inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="main-content">
-    <div class="content-area content-wide">
-        <button class="btn-primary mb-3" @onclick="OpenNewRecord">Добавить запись</button>
+    <div class="content-area content-wide flex-container">
+        <div class="filter-panel">
+            <h3>Сортировка</h3>
+            <div class="records-filter vertical">
+                <label>Сортировать по:</label>
+                <select @bind="sortField" class="filter-select">
+                    <option value="borrowDate">Дата начала</option>
+                    <option value="returnDate">Дата окончания</option>
+                    <option value="duration">Длительность</option>
+                </select>
 
-        @if (records is null)
-        {
-            <p>Загрузка...</p>
-        }
-        else if (!records.Any())
-        {
-            <p>Записей не найдено.</p>
-        }
-        else
-        {
-            <RecordsList Records="records" OnRecordDeleted="OnRecordDeleted" OnRecordEdit="OnRecordEdit" />
-        }
+                <label>Порядок:</label>
+                <select @bind="sortOrder" class="filter-select">
+                    <option value="asc">По возрастанию</option>
+                    <option value="desc">По убыванию</option>
+                </select>
+
+                <button class="btn-primary btn-block" @onclick="ApplySort">Применить</button>
+            </div>
+        </div>
+
+        <div class="records-main">
+            <button class="btn-primary mb-3 btn-block" @onclick="OpenNewRecord">Добавить запись</button>
+
+            @if (loading)
+            {
+                <LoadingSpinner />
+            }
+            else if (!records.Any())
+            {
+                <p>Записей не найдено.</p>
+            }
+            else
+            {
+                <RecordsList Records="records" OnRecordDeleted="OnRecordDeleted" OnRecordEdit="OnRecordEdit" />
+            }
+        </div>
     </div>
 </div>
 
 @code {
     private List<BorrowRecordGetDto> records = new();
+
     private bool IsAdmin = false;
+
+    private int? CustomerIdFilter;
+
+    private bool loading = true;
+
+    private string sortField = "borrowDate";
+
+    private string sortOrder = "asc";
 
     protected override async Task OnInitializedAsync()
     {
         IsAdmin = await AuthService.IsInRoleAsync("Admin");
+
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("customerId", out var custId))
+        {
+            if (int.TryParse(custId, out var id))
+                CustomerIdFilter = id;
+        }
+
         await LoadRecords();
+        ApplySort();
     }
 
     private async Task LoadRecords()
     {
+        loading = true;
+
         var allRecords = await RecordsService.GetAllAsync();
-        records = allRecords;
+        var authUser = await AuthService.GetMyProfileAsync();
+
+        records = allRecords.Where(r =>
+            IsAdmin
+                ? (CustomerIdFilter.HasValue ? r.CustomerId == CustomerIdFilter.Value : true)
+                : r.CustomerId == authUser!.Id
+        ).ToList();
+
+        loading = false;
     }
 
-    private void OpenNewRecord() => Navigation.NavigateTo("/records/create");
+    private void ApplySort()
+    {
+        if (records is null || !records.Any())
+            return;
+
+        records = sortField switch
+        {
+            "borrowDate" => sortOrder == "asc"
+                ? records.OrderBy(r => r.BorrowDate).ToList()
+                : records.OrderByDescending(r => r.BorrowDate).ToList(),
+
+            "returnDate" => sortOrder == "asc"
+                ? records.OrderBy(r => r.BorrowDate.AddDays(r.BorrowDuration)).ToList()
+                : records.OrderByDescending(r => r.BorrowDate.AddDays(r.BorrowDuration)).ToList(),
+
+            "duration" => sortOrder == "asc"
+                ? records.OrderBy(r => r.BorrowDuration).ToList()
+                : records.OrderByDescending(r => r.BorrowDuration).ToList(),
+
+            _ => records
+        };
+    }
+
+    private void OpenNewRecord() =>
+        Navigation.NavigateTo("/records/create");
 
     private async Task OnRecordDeleted(int recordId)
     {
         await RecordsService.DeleteAsync(recordId);
         await LoadRecords();
+        ApplySort();
     }
 
-    private void OnRecordEdit(int recordId) => Navigation.NavigateTo($"/records/edit/{recordId}");
+    private void OnRecordEdit(int recordId) =>
+        Navigation.NavigateTo($"/records/edit/{recordId}");
 }

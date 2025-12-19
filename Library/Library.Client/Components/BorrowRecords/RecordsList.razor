@@ -3,12 +3,17 @@
 <div class="card-grid">
     @foreach (var r in Records)
     {
-        <BorrowRecordCard record="r" OnDeleted="OnRecordDeleted" OnEdit="OnRecordEdit" />
+        <BorrowRecordCard @key="r.Id" record="r" OnDeleted="OnRecordDeleted" OnEdit="OnRecordEdit" />
     }
 </div>
 
 @code {
-    [Parameter] public List<BorrowRecordGetDto> Records { get; set; } = new();
-    [Parameter] public EventCallback<int> OnRecordDeleted { get; set; }
-    [Parameter] public EventCallback<int> OnRecordEdit { get; set; }
+    [Parameter] 
+    public List<BorrowRecordGetDto> Records { get; set; } = new();
+
+    [Parameter] 
+    public EventCallback<int> OnRecordDeleted { get; set; }
+
+    [Parameter] 
+    public EventCallback<int> OnRecordEdit { get; set; }
 }

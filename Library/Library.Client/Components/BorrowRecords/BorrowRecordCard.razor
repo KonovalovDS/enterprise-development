@@ -30,12 +30,19 @@
 </div>
 
 @code {
-    [Parameter] public BorrowRecordGetDto record { get; set; } = default!;
-    [Parameter] public EventCallback<int> OnDeleted { get; set; }
-    [Parameter] public EventCallback<int> OnEdit { get; set; }
+    [Parameter] 
+    public BorrowRecordGetDto record { get; set; } = default!;
+
+    [Parameter] 
+    public EventCallback<int> OnDeleted { get; set; }
+
+    [Parameter] 
+    public EventCallback<int> OnEdit { get; set; }
 
     private BookGetDto? Book;
+
     private string UserName = "";
+
     private bool IsAdmin = false;
 
     protected override async Task OnInitializedAsync()

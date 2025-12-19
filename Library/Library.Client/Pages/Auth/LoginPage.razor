@@ -34,6 +34,10 @@
 </div>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
     private LoginDto loginModel = new LoginDto
         {
             Email = string.Empty,
@@ -50,7 +54,11 @@
             if (result != null)
             {
                 AuthState.NotifyUserAuthentication();
-                Navigation.NavigateTo("/");
+
+                if (!string.IsNullOrWhiteSpace(ReturnUrl))
+                    Navigation.NavigateTo(ReturnUrl);
+                else
+                    Navigation.NavigateTo("/");
             }
             else
             {

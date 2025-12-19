@@ -6,6 +6,7 @@
 @using Library.Client.Components.Books
 @using Library.Client.Components.Common
 
+@inject NavigationManager Nav
 @inject IBaseApiService<BookGetDto, BookEditDto> BookService
 
 <div class="main-content">
@@ -28,6 +29,11 @@
                 }
                 else
                 {
+                    <AuthorizeView Roles="Admin">
+                        <button class="btn-primary btn-block mb-2" @onclick="AddBook">
+                            Добавить книгу
+                        </button>
+                    </AuthorizeView>
                     <BooksGrid Books="filteredBooks" OnBookDeleted="DeleteBook" />
                 }
             </div>
@@ -37,7 +43,9 @@
 
 @code {
     private List<BookGetDto>? books;
+
     private FilterOptions filter = new();
+
     private List<BookGetDto> filteredBooks = new();
 
     protected override async Task OnInitializedAsync()
@@ -53,6 +61,9 @@
 
         filteredBooks = books;
     }
+
+    private void AddBook() =>
+        Nav.NavigateTo("/books/create");
 
     private void ApplyFilter(FilterOptions options)
     {

@@ -21,7 +21,8 @@ builder.Services.AddScoped<AuthorizedHttpClientHandler>();
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7154/");
-}).AddHttpMessageHandler<AuthorizedHttpClientHandler>();
+})
+    .AddHttpMessageHandler<AuthorizedHttpClientHandler>();
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
 

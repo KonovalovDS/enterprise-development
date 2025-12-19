@@ -2,8 +2,9 @@
 
 @using Library.Client.Models.Interfaces
 @using Library.Client.Models.BorrowRecordDtos
-@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
 
+@inject IBaseApiService<BorrowRecordGetDto, BorrowRecordEditDto> RecordsService
+@inject AuthenticationStateProvider AuthState
 @inject IAuthService AuthService
 @inject IBaseApiService<BookGetDto, BookEditDto> BooksService
 @inject NavigationManager Navigation
@@ -11,29 +12,54 @@
 
 <div class="book-card" @onclick="GoToDetails">
     <div class="book-image-wrapper">
-        <div class="book-image-placeholder"></div>
+        <div class="book-image-placeholder">
+            <span>Нет обложки</span>
+        </div>
     </div>
 
     <h3 class="book-title">@Book.Title</h3>
     <p class="book-author">@Book.Author</p>
     <p class="book-info">@Book.Publisher, @Book.PublicationYear</p>
 
-    <div class="book-card-actions">
-        <button class="btn-primary" @onclick="() => ReserveBook(Book.Id)">Забронировать</button>
+    <div class="book-card-actions" @onclick:stopPropagation="true">
+        <button class="btn-primary btn-full" @onclick="() => ReserveBook(Book.Id)">
+            Забронировать
+        </button>
 
         <AuthorizeView Roles="Admin">
-            <button class="btn-secondary" @onclick:stopPropagation="true" @onclick="EditBook">Редактировать</button>
-            <button class="btn-danger" @onclick:stopPropagation="true" @onclick="DeleteBook">Удалить</button>
+            <div class="admin-actions">
+                <button class="btn-secondary" @onclick="EditBook">
+                    Редактировать
+                </button>
+                <button class="btn-danger" @onclick="DeleteBook">
+                    Удалить
+                </button>
+            </div>
         </AuthorizeView>
     </div>
 </div>
 
 @code {
-    [Parameter] public BookGetDto Book { get; set; } = default!;
-    [Parameter] public EventCallback<int> OnBookDeleted { get; set; }
+    [Parameter] 
+    public BookGetDto Book { get; set; } = default!;
 
-    private void ReserveBook(int bookId) =>
+    [Parameter] 
+    public EventCallback<int> OnBookDeleted { get; set; }
+
+    private async Task ReserveBook(int bookId)
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            var returnUrl = Uri.EscapeDataString($"/records/create/{bookId}");
+            Navigation.NavigateTo($"/auth/login?returnUrl={returnUrl}");
+            return;
+        }
+
         Navigation.NavigateTo($"/records/create/{bookId}");
+    }
 
     private void EditBook() =>
         Navigation.NavigateTo($"/books/edit/{Book.Id}");
