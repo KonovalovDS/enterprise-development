@@ -19,7 +19,7 @@ var postgresDb = postgres.AddDatabase("LibraryDB");
 var api = builder.AddProject<Projects.Library_Api>("LibraryApi")
     .WithReference(postgresDb, "DefaultConnection")
     .WithEnvironment("JwtSettingsIssuer", "Library.Api")
-    .WithEnvironment("JwtSettingsAudience", "Library.Client")
+    .WithEnvironment("JwtSettingsAudience", "Library.Api")
     .WithEnvironment("JwtSettingsSecretKey", jwtSecret)
     .WaitFor(postgresDb);
 
@@ -42,6 +42,7 @@ builder.AddProject<Projects.Library_RabbitMqProducer>("RabbitMqProducer")
     .WithExplicitStart();
 
 builder.AddProject<Projects.Library_Client>("Client")
-    .WithReference(api); 
+    .WithReference(api)
+    .WaitFor(api); 
 
 builder.Build().Run();
